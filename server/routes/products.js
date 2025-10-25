@@ -145,6 +145,7 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
             value: String(spec.value || '').trim()
           })).filter(spec => spec.key && spec.value)
         : [],
+      sizeChart: body.sizeChart || undefined,
       active: typeof body.active === 'boolean' ? body.active : true,
     };
 
