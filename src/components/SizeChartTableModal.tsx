@@ -65,7 +65,7 @@ export const SizeChartTableModal = ({
             <div className="space-y-2">
               <h3 className="font-semibold text-foreground">Measurement Guidelines</h3>
               <div className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
-                {guidelines}
+                {escapeHtml(guidelines)}
               </div>
             </div>
           )}
