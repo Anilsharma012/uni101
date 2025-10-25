@@ -12,6 +12,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { SizeChartModal } from "@/components/SizeChartModal";
+import { SizeChartTableModal } from "@/components/SizeChartTableModal";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 const resolveImage = (src?: string) => {
@@ -50,6 +51,12 @@ type P = {
   sizeInventory?: Array<{ code: string; label: string; qty: number }>;
   sizeChartUrl?: string;
   sizeChartTitle?: string;
+  sizeChart?: {
+    title?: string;
+    rows?: Array<{ sizeLabel: string; chest: string; brandSize: string }>;
+    guidelines?: string;
+    diagramUrl?: string;
+  };
   updatedAt?: string;
 };
 
