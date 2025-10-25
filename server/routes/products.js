@@ -118,6 +118,7 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
       category: body.category || undefined,
       stock: typeof body.stock !== 'undefined' ? Number(body.stock) : 0,
       description: body.description || undefined,
+      longDescription: body.longDescription || undefined,
       images: Array.isArray(body.images)
         ? body.images
         : body.image_url
@@ -135,6 +136,15 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
         : [],
       sizeChartUrl: body.sizeChartUrl || undefined,
       sizeChartTitle: body.sizeChartTitle || undefined,
+      highlights: Array.isArray(body.highlights)
+        ? body.highlights.filter(h => String(h || '').trim()).slice(0, 8)
+        : [],
+      specs: Array.isArray(body.specs)
+        ? body.specs.map(spec => ({
+            key: String(spec.key || '').trim(),
+            value: String(spec.value || '').trim()
+          })).filter(spec => spec.key && spec.value)
+        : [],
       active: typeof body.active === 'boolean' ? body.active : true,
     };
 
