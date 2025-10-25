@@ -205,6 +205,7 @@ router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
     }
     if (typeof body.sizeChartUrl !== 'undefined') updates.sizeChartUrl = body.sizeChartUrl || undefined;
     if (typeof body.sizeChartTitle !== 'undefined') updates.sizeChartTitle = body.sizeChartTitle || undefined;
+    if (body.sizeChart !== undefined) updates.sizeChart = body.sizeChart || undefined;
 
     // If Admin UI sent categoryId/subcategoryId, resolve to category name/slug
     try {
