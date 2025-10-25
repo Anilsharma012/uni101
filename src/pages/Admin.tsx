@@ -1833,26 +1833,6 @@ const handleProductSubmit = async (e: React.FormEvent) => {
                 </div>
               </div>
 
-              <div>
-                <Label htmlFor="sizeChartUrl">Size Chart URL (Image or PDF)</Label>
-                <Input
-                  id="sizeChartUrl"
-                  value={productForm.sizeChartUrl}
-                  onChange={(e) => setProductForm((p) => ({ ...p, sizeChartUrl: e.target.value }))}
-                  placeholder="https://example.com/size-chart.jpg"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="sizeChartTitle">Size Chart Title</Label>
-                <Input
-                  id="sizeChartTitle"
-                  value={productForm.sizeChartTitle}
-                  onChange={(e) => setProductForm((p) => ({ ...p, sizeChartTitle: e.target.value }))}
-                  placeholder="Size Guide..."
-                />
-              </div>
-
               <div className="border-t border-border pt-4">
                 <h3 className="text-sm font-semibold mb-4">Structured Size Chart (Alternative)</h3>
 
