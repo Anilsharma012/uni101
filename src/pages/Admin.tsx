@@ -310,6 +310,12 @@ type ProductFormState = {
   sizeInventory: Array<{ code: string; label: string; qty: number }>;
   sizeChartUrl: string;
   sizeChartTitle: string;
+  sizeChart: {
+    title: string;
+    rows: Array<{ sizeLabel: string; chest: string; brandSize: string }>;
+    guidelines: string;
+    diagramUrl: string;
+  };
   highlights: string[];
   longDescription: string;
   specs: Array<{ key: string; value: string }>;
@@ -328,6 +334,12 @@ const EMPTY_FORM: ProductFormState = {
   sizeInventory: [],
   sizeChartUrl: '',
   sizeChartTitle: '',
+  sizeChart: {
+    title: '',
+    rows: [],
+    guidelines: '',
+    diagramUrl: '',
+  },
   highlights: [],
   longDescription: '',
   specs: [],
