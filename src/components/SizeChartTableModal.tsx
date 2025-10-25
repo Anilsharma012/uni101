@@ -70,7 +70,7 @@ export const SizeChartTableModal = ({
           )}
 
           {/* Diagram Image */}
-          {diagramUrl && diagramUrl.trim() && (
+          {diagramUrl && (
             <div className="space-y-2">
               <h3 className="font-semibold text-foreground">Measurement Diagram</h3>
               <div className="flex items-center justify-center py-4">
@@ -78,9 +78,6 @@ export const SizeChartTableModal = ({
                   src={diagramUrl}
                   alt="Size chart diagram"
                   className="max-w-full max-h-[40vh] object-contain rounded-md"
-                  onError={(e) => {
-                    (e.currentTarget.parentElement as HTMLElement).style.display = 'none';
-                  }}
                 />
               </div>
             </div>
