@@ -184,6 +184,16 @@ router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
         value: String(spec.value || '').trim()
       })).filter(spec => spec.key && spec.value);
     }
+    if (typeof body.trackInventoryBySize === 'boolean') updates.trackInventoryBySize = body.trackInventoryBySize;
+    if (Array.isArray(body.sizeInventory)) {
+      updates.sizeInventory = body.sizeInventory.map(s => ({
+        code: String(s.code || '').trim(),
+        label: String(s.label || '').trim(),
+        qty: Number(s.qty || 0)
+      })).filter(s => s.code);
+    }
+    if (typeof body.sizeChartUrl !== 'undefined') updates.sizeChartUrl = body.sizeChartUrl || undefined;
+    if (typeof body.sizeChartTitle !== 'undefined') updates.sizeChartTitle = body.sizeChartTitle || undefined;
 
     // If Admin UI sent categoryId/subcategoryId, resolve to category name/slug
     try {
