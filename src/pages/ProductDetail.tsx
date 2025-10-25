@@ -457,6 +457,14 @@ const ProductDetail = () => {
           </div>
         </div>
       </main>
+
+      <SizeChartModal
+        open={showSizeChart}
+        onOpenChange={setShowSizeChart}
+        title={product?.sizeChartTitle || "Size Chart"}
+        chartUrl={product?.sizeChartUrl}
+      />
+
       <Footer />
     </div>
   );
