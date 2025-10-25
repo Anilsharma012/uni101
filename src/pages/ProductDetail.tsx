@@ -85,8 +85,25 @@ const ProductDetail = () => {
 
   const img = useMemo(() => resolveImage(product?.image_url || (product?.images?.[0] || '')), [product]);
   const title = product?.title || product?.name || '';
-  const stockNum = useMemo(() => Number(product?.stock ?? 0), [product]);
+
+  // Get stock based on per-size inventory or general stock
+  const getCurrentStock = useCallback(() => {
+    if (product?.trackInventoryBySize && Array.isArray(product?.sizeInventory) && selectedSize) {
+      const sizeInfo = product.sizeInventory.find(s => s.code === selectedSize);
+      return sizeInfo?.qty ?? 0;
+    }
+    return Number(product?.stock ?? 0);
+  }, [product, selectedSize]);
+
+  const stockNum = useMemo(() => getCurrentStock(), [getCurrentStock]);
   const outOfStock = stockNum === 0;
+
+  const selectedSizeInfo = useMemo(() => {
+    if (product?.trackInventoryBySize && Array.isArray(product?.sizeInventory) && selectedSize) {
+      return product.sizeInventory.find(s => s.code === selectedSize);
+    }
+    return null;
+  }, [product, selectedSize]);
   const refetchProduct = useCallback(async () => {
     try {
       const cacheKey = `?v=${Date.now()}`;
