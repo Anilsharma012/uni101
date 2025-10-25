@@ -136,14 +136,16 @@ const ProductDetail = () => {
       : (product.stock ?? 0);
 
     if (currentStock === 0) {
-      setSizeStockError(usingSizeInventory && selectedSize ? `Size ${selectedSize} is out of stock` : 'Out of stock');
-      toast({ title: 'Out of stock', description: setSizeStockError, variant: 'destructive' });
+      const errorMsg = usingSizeInventory && selectedSize ? `Size ${selectedSize} is out of stock` : 'Out of stock';
+      setSizeStockError(errorMsg);
+      toast({ title: 'Out of stock', variant: 'destructive' });
       return;
     }
 
     if (quantity > currentStock) {
-      setSizeStockError(`Only ${currentStock} available for ${usingSizeInventory && selectedSize ? `size ${selectedSize}` : 'this item'}`);
-      toast({ title: 'Insufficient stock', description: `Only ${currentStock} available`, variant: 'destructive' });
+      const errorMsg = `Only ${currentStock} available${usingSizeInventory && selectedSize ? ` for size ${selectedSize}` : ''}`;
+      setSizeStockError(errorMsg);
+      toast({ title: 'Insufficient stock', description: errorMsg, variant: 'destructive' });
       return;
     }
 
@@ -178,7 +180,8 @@ const ProductDetail = () => {
       : (product.stock ?? 0);
 
     if (currentStock === 0) {
-      setSizeStockError(usingSizeInventory && selectedSize ? `Size ${selectedSize} is out of stock` : 'Out of stock');
+      const errorMsg = usingSizeInventory && selectedSize ? `Size ${selectedSize} is out of stock` : 'Out of stock';
+      setSizeStockError(errorMsg);
       toast({ title: 'Out of stock', variant: 'destructive' });
       return;
     }
