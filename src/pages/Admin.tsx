@@ -1095,8 +1095,6 @@ const handleProductSubmit = async (e: React.FormEvent) => {
         sizes: Array.isArray(productForm.sizes) ? productForm.sizes : [],
         trackInventoryBySize: productForm.trackInventoryBySize,
         sizeInventory: Array.isArray(productForm.sizeInventory) ? productForm.sizeInventory : [],
-        sizeChartUrl: productForm.sizeChartUrl.trim() || undefined,
-        sizeChartTitle: productForm.sizeChartTitle.trim() || undefined,
         sizeChart: sizeChartPayload,
         categoryId: (productForm as any).categoryId || undefined,
         subcategoryId: (productForm as any).subcategoryId || undefined,
