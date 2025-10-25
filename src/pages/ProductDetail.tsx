@@ -417,7 +417,7 @@ const ProductDetail = () => {
             </div>
 
             {/* Product Details Section */}
-            {(product?.highlights?.length || product?.specs?.length || product?.longDescription) && (
+            {(product?.highlights?.length > 0 || product?.specs?.length > 0 || product?.longDescription) && (
               <div id="details" className="mt-12 pt-8 border-t border-border">
                 <h2 className="text-2xl font-bold tracking-tighter mb-8">Product Details</h2>
 
@@ -426,10 +426,10 @@ const ProductDetail = () => {
                   <div id="highlights" className="mb-8">
                     <h3 className="text-lg font-semibold mb-4">Highlights</h3>
                     <ul className="space-y-2">
-                      {product.highlights.map((highlight, idx) => (
+                      {product.highlights.filter(h => h && String(h).trim()).map((highlight, idx) => (
                         <li key={idx} className="flex items-start gap-3">
                           <span className="text-primary mt-1">•</span>
-                          <span className="text-foreground">{highlight}</span>
+                          <span className="text-foreground">{String(highlight).trim()}</span>
                         </li>
                       ))}
                     </ul>
@@ -443,7 +443,7 @@ const ProductDetail = () => {
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
                         <tbody>
-                          {product.specs.map((spec, idx) => (
+                          {product.specs.filter(s => s && s.key && s.value).map((spec, idx) => (
                             <tr key={idx} className={idx % 2 === 0 ? 'bg-muted/30' : ''}>
                               <td className="px-4 py-3 font-medium text-foreground w-1/3 md:w-1/4">{spec.key}</td>
                               <td className="px-4 py-3 text-muted-foreground">{spec.value}</td>
@@ -456,7 +456,7 @@ const ProductDetail = () => {
                 )}
 
                 {/* Description Section */}
-                {product?.longDescription && (
+                {product?.longDescription && String(product.longDescription).trim() && (
                   <div id="description" className="mb-8">
                     <h3 className="text-lg font-semibold mb-4">Description</h3>
                     <div className="text-muted-foreground leading-relaxed space-y-2">
