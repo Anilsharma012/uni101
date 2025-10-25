@@ -29,6 +29,21 @@ const ProductSchema = new mongoose.Schema(
     },
     sizeChartUrl: { type: String },
     sizeChartTitle: { type: String },
+    sizeChart: {
+      type: {
+        title: { type: String },
+        rows: [
+          {
+            sizeLabel: { type: String },
+            chest: { type: String },
+            brandSize: { type: String }
+          }
+        ],
+        guidelines: { type: String },
+        diagramUrl: { type: String }
+      },
+      default: null
+    },
     active: { type: Boolean, default: true },
     featured: { type: Boolean, default: false },
   },

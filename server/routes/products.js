@@ -118,6 +118,7 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
       category: body.category || undefined,
       stock: typeof body.stock !== 'undefined' ? Number(body.stock) : 0,
       description: body.description || undefined,
+      longDescription: body.longDescription || undefined,
       images: Array.isArray(body.images)
         ? body.images
         : body.image_url
@@ -135,6 +136,16 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
         : [],
       sizeChartUrl: body.sizeChartUrl || undefined,
       sizeChartTitle: body.sizeChartTitle || undefined,
+      highlights: Array.isArray(body.highlights)
+        ? body.highlights.filter(h => String(h || '').trim()).slice(0, 8)
+        : [],
+      specs: Array.isArray(body.specs)
+        ? body.specs.map(spec => ({
+            key: String(spec.key || '').trim(),
+            value: String(spec.value || '').trim()
+          })).filter(spec => spec.key && spec.value)
+        : [],
+      sizeChart: body.sizeChart || undefined,
       active: typeof body.active === 'boolean' ? body.active : true,
     };
 
@@ -194,6 +205,7 @@ router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
     }
     if (typeof body.sizeChartUrl !== 'undefined') updates.sizeChartUrl = body.sizeChartUrl || undefined;
     if (typeof body.sizeChartTitle !== 'undefined') updates.sizeChartTitle = body.sizeChartTitle || undefined;
+    if (body.sizeChart !== undefined) updates.sizeChart = body.sizeChart || undefined;
 
     // If Admin UI sent categoryId/subcategoryId, resolve to category name/slug
     try {
@@ -239,6 +251,7 @@ router.patch('/:id', requireAuth, requireAdmin, async (req, res) => {
     }
     if (typeof body.sizeChartUrl !== 'undefined') updates.sizeChartUrl = body.sizeChartUrl || undefined;
     if (typeof body.sizeChartTitle !== 'undefined') updates.sizeChartTitle = body.sizeChartTitle || undefined;
+    if (body.sizeChart !== undefined) updates.sizeChart = body.sizeChart || undefined;
 
     const doc = await Product.findByIdAndUpdate(id, updates, { new: true }).lean();
     if (!doc) return res.status(404).json({ ok: false, message: 'Not found' });

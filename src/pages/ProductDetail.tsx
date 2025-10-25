@@ -12,6 +12,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { SizeChartModal } from "@/components/SizeChartModal";
+import { SizeChartTableModal } from "@/components/SizeChartTableModal";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 const resolveImage = (src?: string) => {
@@ -50,6 +51,12 @@ type P = {
   sizeInventory?: Array<{ code: string; label: string; qty: number }>;
   sizeChartUrl?: string;
   sizeChartTitle?: string;
+  sizeChart?: {
+    title?: string;
+    rows?: Array<{ sizeLabel: string; chest: string; brandSize: string }>;
+    guidelines?: string;
+    diagramUrl?: string;
+  };
   updatedAt?: string;
 };
 
@@ -66,6 +73,7 @@ const ProductDetail = () => {
   const [selectedSize, setSelectedSize] = useState<string>('');
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
   const [showSizeChart, setShowSizeChart] = useState(false);
+  const [showSizeChartTable, setShowSizeChartTable] = useState(false);
   const [sizeStockError, setSizeStockError] = useState<string>('');
 
   useEffect(() => {
@@ -136,14 +144,16 @@ const ProductDetail = () => {
       : (product.stock ?? 0);
 
     if (currentStock === 0) {
-      setSizeStockError(usingSizeInventory && selectedSize ? `Size ${selectedSize} is out of stock` : 'Out of stock');
-      toast({ title: 'Out of stock', description: setSizeStockError, variant: 'destructive' });
+      const errorMsg = usingSizeInventory && selectedSize ? `Size ${selectedSize} is out of stock` : 'Out of stock';
+      setSizeStockError(errorMsg);
+      toast({ title: 'Out of stock', variant: 'destructive' });
       return;
     }
 
     if (quantity > currentStock) {
-      setSizeStockError(`Only ${currentStock} available for ${usingSizeInventory && selectedSize ? `size ${selectedSize}` : 'this item'}`);
-      toast({ title: 'Insufficient stock', description: `Only ${currentStock} available`, variant: 'destructive' });
+      const errorMsg = `Only ${currentStock} available${usingSizeInventory && selectedSize ? ` for size ${selectedSize}` : ''}`;
+      setSizeStockError(errorMsg);
+      toast({ title: 'Insufficient stock', description: errorMsg, variant: 'destructive' });
       return;
     }
 
@@ -178,7 +188,8 @@ const ProductDetail = () => {
       : (product.stock ?? 0);
 
     if (currentStock === 0) {
-      setSizeStockError(usingSizeInventory && selectedSize ? `Size ${selectedSize} is out of stock` : 'Out of stock');
+      const errorMsg = usingSizeInventory && selectedSize ? `Size ${selectedSize} is out of stock` : 'Out of stock';
+      setSizeStockError(errorMsg);
       toast({ title: 'Out of stock', variant: 'destructive' });
       return;
     }
@@ -247,7 +258,18 @@ const ProductDetail = () => {
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-3">
                   <label className="block text-sm font-semibold">Size</label>
-                  {product.sizeChartUrl && (
+                  {product.sizeChart ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowSizeChartTable(true)}
+                      className="text-xs"
+                    >
+                      <Ruler className="h-3 w-3 mr-1" />
+                      Size Chart
+                    </Button>
+                  ) : product.sizeChartUrl && (
                     <Button
                       type="button"
                       variant="ghost"
@@ -309,7 +331,18 @@ const ProductDetail = () => {
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-3">
                   <label className="block text-sm font-semibold">Size</label>
-                  {product.sizeChartUrl && (
+                  {product.sizeChart ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowSizeChartTable(true)}
+                      className="text-xs"
+                    >
+                      <Ruler className="h-3 w-3 mr-1" />
+                      Size Chart
+                    </Button>
+                  ) : product.sizeChartUrl && (
                     <Button
                       type="button"
                       variant="ghost"
@@ -465,6 +498,15 @@ const ProductDetail = () => {
         onOpenChange={setShowSizeChart}
         title={product?.sizeChartTitle || "Size Chart"}
         chartUrl={product?.sizeChartUrl}
+      />
+
+      <SizeChartTableModal
+        open={showSizeChartTable}
+        onOpenChange={setShowSizeChartTable}
+        title={product?.sizeChart?.title || `${title} • Size Chart`}
+        rows={product?.sizeChart?.rows}
+        guidelines={product?.sizeChart?.guidelines}
+        diagramUrl={product?.sizeChart?.diagramUrl}
       />
 
       <Footer />
