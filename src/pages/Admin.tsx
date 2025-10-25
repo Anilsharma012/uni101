@@ -1074,6 +1074,18 @@ const handleProductSubmit = async (e: React.FormEvent) => {
 
     try {
       setSaving(true);
+      const sizeChartData = productForm.sizeChart;
+      const sizeChartPayload = sizeChartData && (sizeChartData.title.trim() || sizeChartData.rows?.length > 0 || sizeChartData.guidelines.trim())
+        ? {
+            title: sizeChartData.title.trim() || undefined,
+            rows: Array.isArray(sizeChartData.rows)
+              ? sizeChartData.rows.filter(r => r.sizeLabel?.trim())
+              : [],
+            guidelines: sizeChartData.guidelines.trim() || undefined,
+            diagramUrl: sizeChartData.diagramUrl?.trim() || undefined,
+          }
+        : undefined;
+
       const payload = {
         name: productForm.name.trim(),
         description: productForm.description.trim(),
@@ -1085,6 +1097,7 @@ const handleProductSubmit = async (e: React.FormEvent) => {
         sizeInventory: Array.isArray(productForm.sizeInventory) ? productForm.sizeInventory : [],
         sizeChartUrl: productForm.sizeChartUrl.trim() || undefined,
         sizeChartTitle: productForm.sizeChartTitle.trim() || undefined,
+        sizeChart: sizeChartPayload,
         categoryId: (productForm as any).categoryId || undefined,
         subcategoryId: (productForm as any).subcategoryId || undefined,
         highlights: Array.isArray(productForm.highlights) ? productForm.highlights.filter(h => h.trim()) : [],
