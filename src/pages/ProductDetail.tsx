@@ -258,7 +258,18 @@ const ProductDetail = () => {
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-3">
                   <label className="block text-sm font-semibold">Size</label>
-                  {product.sizeChartUrl && (
+                  {product.sizeChart ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowSizeChartTable(true)}
+                      className="text-xs"
+                    >
+                      <Ruler className="h-3 w-3 mr-1" />
+                      Size Chart
+                    </Button>
+                  ) : product.sizeChartUrl && (
                     <Button
                       type="button"
                       variant="ghost"
