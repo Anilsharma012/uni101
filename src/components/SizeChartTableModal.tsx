@@ -1,6 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
+import { escapeHtml } from "@/lib/utils";
 
 interface SizeChartRow {
   sizeLabel: string;
