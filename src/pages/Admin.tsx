@@ -306,6 +306,10 @@ type ProductFormState = {
   subcategoryId: string;
   stock: number;
   sizes: string[];
+  trackInventoryBySize: boolean;
+  sizeInventory: Array<{ code: string; label: string; qty: number }>;
+  sizeChartUrl: string;
+  sizeChartTitle: string;
   highlights: string[];
   longDescription: string;
   specs: Array<{ key: string; value: string }>;
