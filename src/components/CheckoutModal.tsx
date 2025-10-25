@@ -177,7 +177,7 @@ export const CheckoutModal: React.FC<Props> = ({ open, setOpen }) => {
           paymentMethod: payment,
           status: "pending",
           createdAt: new Date().toISOString(),
-          items: items.map((i) => ({ id: i.id, title: i.title, price: i.price, qty: i.qty, image: i.image })),
+          items: items.map((i) => ({ id: i.id, title: i.title, price: i.price, qty: i.qty, image: i.image, size: i.meta?.size })),
           upi: payment === "UPI" ? { payerName: upiPayerName, txnId: upiTxnId || undefined } : undefined,
         } as any;
         localStorage.setItem("uni_orders_v1", JSON.stringify([order, ...arr]));
@@ -200,7 +200,12 @@ export const CheckoutModal: React.FC<Props> = ({ open, setOpen }) => {
       setOpen(false);
       navigate("/dashboard", { replace: true });
     } else {
-      toast({ title: "Order failed", description: String(res.error ?? "Unknown error"), variant: "destructive" });
+      const errorMsg = res.error?.message || String(res.error ?? "Unknown error");
+      toast({
+        title: "Order failed",
+        description: errorMsg,
+        variant: "destructive",
+      });
     }
   };
 
