@@ -120,16 +120,34 @@ const ProductDetail = () => {
 
   const handleAddToCart = () => {
     if (!product) return;
-    if (outOfStock) {
-      toast({ title: 'Out of stock', variant: 'destructive' });
-      return;
-    }
-    // If product defines sizes, require selection
-    if (Array.isArray(product?.sizes) && product.sizes.length > 0 && !selectedSize) {
+
+    // Check if per-size inventory tracking is enabled
+    const usingSizeInventory = product?.trackInventoryBySize && Array.isArray(product?.sizeInventory);
+
+    // If product uses per-size inventory, require size selection
+    if (usingSizeInventory && !selectedSize) {
       toast({ title: 'Select a size', description: 'Please choose a size before adding to cart.', variant: 'destructive' });
       return;
     }
 
+    // Check stock based on inventory type
+    const currentStock = usingSizeInventory && selectedSize
+      ? (product.sizeInventory?.find(s => s.code === selectedSize)?.qty ?? 0)
+      : (product.stock ?? 0);
+
+    if (currentStock === 0) {
+      setSizeStockError(usingSizeInventory && selectedSize ? `Size ${selectedSize} is out of stock` : 'Out of stock');
+      toast({ title: 'Out of stock', description: setSizeStockError, variant: 'destructive' });
+      return;
+    }
+
+    if (quantity > currentStock) {
+      setSizeStockError(`Only ${currentStock} available for ${usingSizeInventory && selectedSize ? `size ${selectedSize}` : 'this item'}`);
+      toast({ title: 'Insufficient stock', description: `Only ${currentStock} available`, variant: 'destructive' });
+      return;
+    }
+
+    setSizeStockError('');
     const item = { id: String(product._id || product.id || id), title, price: Number(product.price || 0), image: img, meta: {} as any };
     if (selectedSize) item.meta.size = selectedSize;
 
