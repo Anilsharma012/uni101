@@ -46,6 +46,10 @@ type P = {
   image_url?: string;
   images?: string[];
   sizes?: string[];
+  trackInventoryBySize?: boolean;
+  sizeInventory?: Array<{ code: string; label: string; qty: number }>;
+  sizeChartUrl?: string;
+  sizeChartTitle?: string;
   updatedAt?: string;
 };
 
