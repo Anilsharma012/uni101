@@ -242,15 +242,95 @@ const ProductDetail = () => {
             </div>
             <p className="text-muted-foreground mb-8">{product.description}</p>
 
-            {Array.isArray(product?.sizes) && product.sizes.length > 0 && (
+            {/* Per-size inventory display */}
+            {product?.trackInventoryBySize && Array.isArray(product?.sizeInventory) && product.sizeInventory.length > 0 && (
               <div className="mb-6">
-                <label className="block text-sm font-semibold mb-3">Size</label>
+                <div className="flex items-center justify-between mb-3">
+                  <label className="block text-sm font-semibold">Size</label>
+                  {product.sizeChartUrl && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowSizeChart(true)}
+                      className="text-xs"
+                    >
+                      <Ruler className="h-3 w-3 mr-1" />
+                      Size Chart
+                    </Button>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {product.sizeInventory.map((sizeItem) => {
+                    const isOutOfStock = sizeItem.qty === 0;
+                    const isLowStock = sizeItem.qty > 0 && sizeItem.qty <= 3;
+                    return (
+                      <div key={sizeItem.code} className="relative">
+                        <button
+                          type="button"
+                          disabled={isOutOfStock}
+                          onClick={() => {
+                            setSelectedSize(sizeItem.code);
+                            setSizeStockError('');
+                          }}
+                          className={cn(
+                            'px-4 py-2 rounded border text-sm font-medium transition-colors',
+                            isOutOfStock
+                              ? 'opacity-50 cursor-not-allowed bg-muted border-border text-muted-foreground'
+                              : selectedSize === sizeItem.code
+                              ? 'bg-primary text-primary-foreground border-primary'
+                              : 'bg-transparent border-border hover:border-primary',
+                          )}
+                        >
+                          {sizeItem.label}
+                        </button>
+                        {isOutOfStock && (
+                          <span className="absolute -bottom-5 left-0 text-xs text-destructive font-medium whitespace-nowrap">
+                            Out of stock
+                          </span>
+                        )}
+                        {isLowStock && !isOutOfStock && (
+                          <span className="absolute -bottom-5 left-0 text-xs text-orange-600 font-medium whitespace-nowrap">
+                            Only {sizeItem.qty} left
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+                {sizeStockError && (
+                  <p className="text-xs text-destructive mt-4">{sizeStockError}</p>
+                )}
+              </div>
+            )}
+
+            {/* Simple sizes (non-inventory tracked) */}
+            {!product?.trackInventoryBySize && Array.isArray(product?.sizes) && product.sizes.length > 0 && (
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-3">
+                  <label className="block text-sm font-semibold">Size</label>
+                  {product.sizeChartUrl && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowSizeChart(true)}
+                      className="text-xs"
+                    >
+                      <Ruler className="h-3 w-3 mr-1" />
+                      Size Chart
+                    </Button>
+                  )}
+                </div>
                 <div className="flex flex-wrap gap-2">
                   {product.sizes.map((sz) => (
                     <button
                       key={sz}
                       type="button"
-                      onClick={() => setSelectedSize(sz)}
+                      onClick={() => {
+                        setSelectedSize(sz);
+                        setSizeStockError('');
+                      }}
                       className={cn(
                         'px-3 py-1 rounded border',
                         selectedSize === sz ? 'bg-primary text-primary-foreground border-primary' : 'bg-transparent border-border',
