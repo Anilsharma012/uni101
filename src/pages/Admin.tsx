@@ -1650,7 +1650,139 @@ const handleProductSubmit = async (e: React.FormEvent) => {
               </div>
 
               <div>
-                <Label>Sizes</Label>
+                <Label>Track Inventory by Size</Label>
+                <div className="flex items-center gap-3 mt-2">
+                  <Switch
+                    checked={productForm.trackInventoryBySize}
+                    onCheckedChange={(checked) =>
+                      setProductForm((p) => ({ ...p, trackInventoryBySize: checked }))
+                    }
+                  />
+                  <span className="text-sm text-muted-foreground">
+                    {productForm.trackInventoryBySize ? 'Per-size inventory tracking enabled' : 'Use general stock'}
+                  </span>
+                </div>
+              </div>
+
+              {productForm.trackInventoryBySize && (
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <Label>Size Inventory</Label>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          const defaultSizes = ['S', 'M', 'L', 'XL', 'XXL'];
+                          setProductForm((p) => ({
+                            ...p,
+                            sizeInventory: defaultSizes.map((code) => ({
+                              code,
+                              label: code,
+                              qty: 0,
+                            })),
+                          }));
+                        }}
+                      >
+                        Add Defaults (S-XXL)
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setProductForm((p) => ({
+                            ...p,
+                            sizeInventory: p.sizeInventory.map((s) => ({ ...s, qty: 0 })),
+                          }));
+                        }}
+                      >
+                        Clear All Qty
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    {productForm.sizeInventory.length === 0 ? (
+                      <p className="text-xs text-muted-foreground">
+                        Click "Add Defaults" to add S/M/L/XL/XXL or manually add sizes below.
+                      </p>
+                    ) : null}
+                    {productForm.sizeInventory.map((sz, idx) => (
+                      <div key={idx} className="grid grid-cols-3 gap-2 items-end">
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Code</Label>
+                          <Input
+                            value={sz.code}
+                            onChange={(e) => {
+                              const newSizes = [...productForm.sizeInventory];
+                              newSizes[idx].code = e.target.value.toUpperCase();
+                              setProductForm((p) => ({ ...p, sizeInventory: newSizes }));
+                            }}
+                            placeholder="S, M, L..."
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Label</Label>
+                          <Input
+                            value={sz.label}
+                            onChange={(e) => {
+                              const newSizes = [...productForm.sizeInventory];
+                              newSizes[idx].label = e.target.value;
+                              setProductForm((p) => ({ ...p, sizeInventory: newSizes }));
+                            }}
+                            placeholder="Small..."
+                          />
+                        </div>
+                        <div className="flex gap-2 items-end">
+                          <div className="flex-1">
+                            <Label className="text-xs text-muted-foreground">Qty</Label>
+                            <Input
+                              type="number"
+                              min={0}
+                              value={sz.qty}
+                              onChange={(e) => {
+                                const newSizes = [...productForm.sizeInventory];
+                                newSizes[idx].qty = Number(e.target.value) || 0;
+                                setProductForm((p) => ({ ...p, sizeInventory: newSizes }));
+                              }}
+                            />
+                          </div>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => {
+                              setProductForm((p) => ({
+                                ...p,
+                                sizeInventory: p.sizeInventory.filter((_, i) => i !== idx),
+                              }));
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setProductForm((p) => ({
+                          ...p,
+                          sizeInventory: [...p.sizeInventory, { code: '', label: '', qty: 0 }],
+                        }));
+                      }}
+                    >
+                      <Plus className="h-4 w-4 mr-2" /> Add Size
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <Label>Sizes (Simple)</Label>
                 <div className="flex flex-wrap gap-3 mt-2">
                   {['S','M','L','XL','XXL'].map((sz) => (
                     <label key={sz} className="flex items-center gap-2 text-sm">
@@ -1668,6 +1800,26 @@ const handleProductSubmit = async (e: React.FormEvent) => {
                     </label>
                   ))}
                 </div>
+              </div>
+
+              <div>
+                <Label htmlFor="sizeChartUrl">Size Chart URL (Image or PDF)</Label>
+                <Input
+                  id="sizeChartUrl"
+                  value={productForm.sizeChartUrl}
+                  onChange={(e) => setProductForm((p) => ({ ...p, sizeChartUrl: e.target.value }))}
+                  placeholder="https://example.com/size-chart.jpg"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="sizeChartTitle">Size Chart Title</Label>
+                <Input
+                  id="sizeChartTitle"
+                  value={productForm.sizeChartTitle}
+                  onChange={(e) => setProductForm((p) => ({ ...p, sizeChartTitle: e.target.value }))}
+                  placeholder="Size Guide..."
+                />
               </div>
 
               <div>
