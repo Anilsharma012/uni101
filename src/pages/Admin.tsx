@@ -456,6 +456,10 @@ const Admin = () => {
       sizes: Array.isArray((product as any).sizes)
         ? (product as any).sizes
         : (Array.isArray((product as any).attributes?.sizes) ? (product as any).attributes.sizes : []),
+      trackInventoryBySize: product.trackInventoryBySize ?? true,
+      sizeInventory: Array.isArray(product.sizeInventory) ? product.sizeInventory : [],
+      sizeChartUrl: product.sizeChartUrl ?? '',
+      sizeChartTitle: product.sizeChartTitle ?? '',
       highlights: Array.isArray(product.highlights) ? product.highlights : [],
       longDescription: product.longDescription ?? '',
       specs: Array.isArray(product.specs) ? product.specs : [],
