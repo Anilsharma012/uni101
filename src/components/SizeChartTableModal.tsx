@@ -1,6 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
+import { escapeHtml } from "@/lib/utils";
 
 interface SizeChartRow {
   sizeLabel: string;
@@ -64,7 +65,7 @@ export const SizeChartTableModal = ({
             <div className="space-y-2">
               <h3 className="font-semibold text-foreground">Measurement Guidelines</h3>
               <div className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
-                {guidelines}
+                {escapeHtml(guidelines)}
               </div>
             </div>
           )}
