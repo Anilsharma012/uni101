@@ -461,9 +461,9 @@ const ProductDetail = () => {
                     <h3 className="text-lg font-semibold mb-4">Description</h3>
                     <div className="text-muted-foreground leading-relaxed space-y-2">
                       {descriptionExpanded || (product.longDescription.length <= 250) ? (
-                        <p className="whitespace-pre-wrap">{product.longDescription}</p>
+                        <p className="whitespace-pre-wrap">{escapeHtml(product.longDescription)}</p>
                       ) : (
-                        <p className="whitespace-pre-wrap">{product.longDescription.substring(0, 250)}...</p>
+                        <p className="whitespace-pre-wrap">{escapeHtml(product.longDescription.substring(0, 250))}...</p>
                       )}
                       {product.longDescription.length > 250 && (
                         <button
