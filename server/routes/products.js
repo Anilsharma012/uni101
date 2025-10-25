@@ -251,6 +251,7 @@ router.patch('/:id', requireAuth, requireAdmin, async (req, res) => {
     }
     if (typeof body.sizeChartUrl !== 'undefined') updates.sizeChartUrl = body.sizeChartUrl || undefined;
     if (typeof body.sizeChartTitle !== 'undefined') updates.sizeChartTitle = body.sizeChartTitle || undefined;
+    if (body.sizeChart !== undefined) updates.sizeChart = body.sizeChart || undefined;
 
     const doc = await Product.findByIdAndUpdate(id, updates, { new: true }).lean();
     if (!doc) return res.status(404).json({ ok: false, message: 'Not found' });
