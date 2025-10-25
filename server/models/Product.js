@@ -16,6 +16,19 @@ const ProductSchema = new mongoose.Schema(
     stock: { type: Number, default: 0 },
     attributes: { type: Object, default: {} },
     sizes: { type: [String], default: [] },
+    trackInventoryBySize: { type: Boolean, default: true },
+    sizeInventory: {
+      type: [
+        {
+          code: { type: String },
+          label: { type: String },
+          qty: { type: Number, default: 0 },
+        },
+      ],
+      default: [],
+    },
+    sizeChartUrl: { type: String },
+    sizeChartTitle: { type: String },
     active: { type: Boolean, default: true },
     featured: { type: Boolean, default: false },
   },

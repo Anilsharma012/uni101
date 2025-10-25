@@ -4,13 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ShoppingCart, ArrowLeft, ChevronDown, ChevronUp } from "lucide-react";
+import { ShoppingCart, ArrowLeft, ChevronDown, ChevronUp, Ruler } from "lucide-react";
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { SizeChartModal } from "@/components/SizeChartModal";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 const resolveImage = (src?: string) => {
@@ -45,6 +46,10 @@ type P = {
   image_url?: string;
   images?: string[];
   sizes?: string[];
+  trackInventoryBySize?: boolean;
+  sizeInventory?: Array<{ code: string; label: string; qty: number }>;
+  sizeChartUrl?: string;
+  sizeChartTitle?: string;
   updatedAt?: string;
 };
 
@@ -60,6 +65,8 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState<string>('');
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
+  const [showSizeChart, setShowSizeChart] = useState(false);
+  const [sizeStockError, setSizeStockError] = useState<string>('');
 
   useEffect(() => {
     (async () => {
@@ -78,8 +85,25 @@ const ProductDetail = () => {
 
   const img = useMemo(() => resolveImage(product?.image_url || (product?.images?.[0] || '')), [product]);
   const title = product?.title || product?.name || '';
-  const stockNum = useMemo(() => Number(product?.stock ?? 0), [product]);
+
+  // Get stock based on per-size inventory or general stock
+  const getCurrentStock = useCallback(() => {
+    if (product?.trackInventoryBySize && Array.isArray(product?.sizeInventory) && selectedSize) {
+      const sizeInfo = product.sizeInventory.find(s => s.code === selectedSize);
+      return sizeInfo?.qty ?? 0;
+    }
+    return Number(product?.stock ?? 0);
+  }, [product, selectedSize]);
+
+  const stockNum = useMemo(() => getCurrentStock(), [getCurrentStock]);
   const outOfStock = stockNum === 0;
+
+  const selectedSizeInfo = useMemo(() => {
+    if (product?.trackInventoryBySize && Array.isArray(product?.sizeInventory) && selectedSize) {
+      return product.sizeInventory.find(s => s.code === selectedSize);
+    }
+    return null;
+  }, [product, selectedSize]);
   const refetchProduct = useCallback(async () => {
     try {
       const cacheKey = `?v=${Date.now()}`;
@@ -96,16 +120,34 @@ const ProductDetail = () => {
 
   const handleAddToCart = () => {
     if (!product) return;
-    if (outOfStock) {
-      toast({ title: 'Out of stock', variant: 'destructive' });
-      return;
-    }
-    // If product defines sizes, require selection
-    if (Array.isArray(product?.sizes) && product.sizes.length > 0 && !selectedSize) {
+
+    // Check if per-size inventory tracking is enabled
+    const usingSizeInventory = product?.trackInventoryBySize && Array.isArray(product?.sizeInventory);
+
+    // If product uses per-size inventory, require size selection
+    if (usingSizeInventory && !selectedSize) {
       toast({ title: 'Select a size', description: 'Please choose a size before adding to cart.', variant: 'destructive' });
       return;
     }
 
+    // Check stock based on inventory type
+    const currentStock = usingSizeInventory && selectedSize
+      ? (product.sizeInventory?.find(s => s.code === selectedSize)?.qty ?? 0)
+      : (product.stock ?? 0);
+
+    if (currentStock === 0) {
+      setSizeStockError(usingSizeInventory && selectedSize ? `Size ${selectedSize} is out of stock` : 'Out of stock');
+      toast({ title: 'Out of stock', description: setSizeStockError, variant: 'destructive' });
+      return;
+    }
+
+    if (quantity > currentStock) {
+      setSizeStockError(`Only ${currentStock} available for ${usingSizeInventory && selectedSize ? `size ${selectedSize}` : 'this item'}`);
+      toast({ title: 'Insufficient stock', description: `Only ${currentStock} available`, variant: 'destructive' });
+      return;
+    }
+
+    setSizeStockError('');
     const item = { id: String(product._id || product.id || id), title, price: Number(product.price || 0), image: img, meta: {} as any };
     if (selectedSize) item.meta.size = selectedSize;
 
@@ -120,13 +162,24 @@ const ProductDetail = () => {
 
   const handleBuyNow = () => {
     if (!product) return;
-    if (outOfStock) {
-      toast({ title: 'Out of stock', variant: 'destructive' });
+
+    // Check if per-size inventory tracking is enabled
+    const usingSizeInventory = product?.trackInventoryBySize && Array.isArray(product?.sizeInventory);
+
+    // If product uses per-size inventory, require size selection
+    if (usingSizeInventory && !selectedSize) {
+      toast({ title: 'Select a size', description: 'Please choose a size before proceeding to checkout.', variant: 'destructive' });
       return;
     }
-    // If product defines sizes, require selection
-    if (Array.isArray(product?.sizes) && product.sizes.length > 0 && !selectedSize) {
-      toast({ title: 'Select a size', description: 'Please choose a size before proceeding to checkout.', variant: 'destructive' });
+
+    // Check stock based on inventory type
+    const currentStock = usingSizeInventory && selectedSize
+      ? (product.sizeInventory?.find(s => s.code === selectedSize)?.qty ?? 0)
+      : (product.stock ?? 0);
+
+    if (currentStock === 0) {
+      setSizeStockError(usingSizeInventory && selectedSize ? `Size ${selectedSize} is out of stock` : 'Out of stock');
+      toast({ title: 'Out of stock', variant: 'destructive' });
       return;
     }
 
@@ -189,15 +242,95 @@ const ProductDetail = () => {
             </div>
             <p className="text-muted-foreground mb-8">{product.description}</p>
 
-            {Array.isArray(product?.sizes) && product.sizes.length > 0 && (
+            {/* Per-size inventory display */}
+            {product?.trackInventoryBySize && Array.isArray(product?.sizeInventory) && product.sizeInventory.length > 0 && (
               <div className="mb-6">
-                <label className="block text-sm font-semibold mb-3">Size</label>
+                <div className="flex items-center justify-between mb-3">
+                  <label className="block text-sm font-semibold">Size</label>
+                  {product.sizeChartUrl && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowSizeChart(true)}
+                      className="text-xs"
+                    >
+                      <Ruler className="h-3 w-3 mr-1" />
+                      Size Chart
+                    </Button>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {product.sizeInventory.map((sizeItem) => {
+                    const isOutOfStock = sizeItem.qty === 0;
+                    const isLowStock = sizeItem.qty > 0 && sizeItem.qty <= 3;
+                    return (
+                      <div key={sizeItem.code} className="relative">
+                        <button
+                          type="button"
+                          disabled={isOutOfStock}
+                          onClick={() => {
+                            setSelectedSize(sizeItem.code);
+                            setSizeStockError('');
+                          }}
+                          className={cn(
+                            'px-4 py-2 rounded border text-sm font-medium transition-colors',
+                            isOutOfStock
+                              ? 'opacity-50 cursor-not-allowed bg-muted border-border text-muted-foreground'
+                              : selectedSize === sizeItem.code
+                              ? 'bg-primary text-primary-foreground border-primary'
+                              : 'bg-transparent border-border hover:border-primary',
+                          )}
+                        >
+                          {sizeItem.label}
+                        </button>
+                        {isOutOfStock && (
+                          <span className="absolute -bottom-5 left-0 text-xs text-destructive font-medium whitespace-nowrap">
+                            Out of stock
+                          </span>
+                        )}
+                        {isLowStock && !isOutOfStock && (
+                          <span className="absolute -bottom-5 left-0 text-xs text-orange-600 font-medium whitespace-nowrap">
+                            Only {sizeItem.qty} left
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+                {sizeStockError && (
+                  <p className="text-xs text-destructive mt-4">{sizeStockError}</p>
+                )}
+              </div>
+            )}
+
+            {/* Simple sizes (non-inventory tracked) */}
+            {!product?.trackInventoryBySize && Array.isArray(product?.sizes) && product.sizes.length > 0 && (
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-3">
+                  <label className="block text-sm font-semibold">Size</label>
+                  {product.sizeChartUrl && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowSizeChart(true)}
+                      className="text-xs"
+                    >
+                      <Ruler className="h-3 w-3 mr-1" />
+                      Size Chart
+                    </Button>
+                  )}
+                </div>
                 <div className="flex flex-wrap gap-2">
                   {product.sizes.map((sz) => (
                     <button
                       key={sz}
                       type="button"
-                      onClick={() => setSelectedSize(sz)}
+                      onClick={() => {
+                        setSelectedSize(sz);
+                        setSizeStockError('');
+                      }}
                       className={cn(
                         'px-3 py-1 rounded border',
                         selectedSize === sz ? 'bg-primary text-primary-foreground border-primary' : 'bg-transparent border-border',
@@ -221,7 +354,7 @@ const ProductDetail = () => {
 
  
             <div className="space-y-3">
-              {outOfStock ? (
+              {outOfStock || (product?.trackInventoryBySize && !selectedSize) ? (
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -232,7 +365,9 @@ const ProductDetail = () => {
                         </Button>
                       </span>
                     </TooltipTrigger>
-                    <TooltipContent>Out of stock</TooltipContent>
+                    <TooltipContent>
+                      {outOfStock ? "Out of stock" : "Please select a size"}
+                    </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
               ) : (
@@ -241,7 +376,7 @@ const ProductDetail = () => {
                   Add to Cart
                 </Button>
               )}
-              {!outOfStock && (
+              {!(outOfStock || (product?.trackInventoryBySize && !selectedSize)) && (
                 <Button size="lg" className="w-full" onClick={handleBuyNow}>
                   Buy Now
                 </Button>
@@ -324,6 +459,14 @@ const ProductDetail = () => {
           </div>
         </div>
       </main>
+
+      <SizeChartModal
+        open={showSizeChart}
+        onOpenChange={setShowSizeChart}
+        title={product?.sizeChartTitle || "Size Chart"}
+        chartUrl={product?.sizeChartUrl}
+      />
+
       <Footer />
     </div>
   );

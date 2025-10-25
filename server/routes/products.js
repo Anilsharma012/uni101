@@ -125,6 +125,16 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
         : [],
       attributes: body.attributes || {},
       sizes: Array.isArray(body.sizes) ? body.sizes : (Array.isArray(body.attributes?.sizes) ? body.attributes.sizes : []),
+      trackInventoryBySize: typeof body.trackInventoryBySize === 'boolean' ? body.trackInventoryBySize : true,
+      sizeInventory: Array.isArray(body.sizeInventory)
+        ? body.sizeInventory.map(s => ({
+            code: String(s.code || '').trim(),
+            label: String(s.label || '').trim(),
+            qty: Number(s.qty || 0)
+          })).filter(s => s.code)
+        : [],
+      sizeChartUrl: body.sizeChartUrl || undefined,
+      sizeChartTitle: body.sizeChartTitle || undefined,
       active: typeof body.active === 'boolean' ? body.active : true,
     };
 
@@ -174,6 +184,16 @@ router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
         value: String(spec.value || '').trim()
       })).filter(spec => spec.key && spec.value);
     }
+    if (typeof body.trackInventoryBySize === 'boolean') updates.trackInventoryBySize = body.trackInventoryBySize;
+    if (Array.isArray(body.sizeInventory)) {
+      updates.sizeInventory = body.sizeInventory.map(s => ({
+        code: String(s.code || '').trim(),
+        label: String(s.label || '').trim(),
+        qty: Number(s.qty || 0)
+      })).filter(s => s.code);
+    }
+    if (typeof body.sizeChartUrl !== 'undefined') updates.sizeChartUrl = body.sizeChartUrl || undefined;
+    if (typeof body.sizeChartTitle !== 'undefined') updates.sizeChartTitle = body.sizeChartTitle || undefined;
 
     // If Admin UI sent categoryId/subcategoryId, resolve to category name/slug
     try {
@@ -209,6 +229,16 @@ router.patch('/:id', requireAuth, requireAdmin, async (req, res) => {
         value: String(spec.value || '').trim()
       })).filter(spec => spec.key && spec.value);
     }
+    if (typeof body.trackInventoryBySize === 'boolean') updates.trackInventoryBySize = body.trackInventoryBySize;
+    if (Array.isArray(body.sizeInventory)) {
+      updates.sizeInventory = body.sizeInventory.map(s => ({
+        code: String(s.code || '').trim(),
+        label: String(s.label || '').trim(),
+        qty: Number(s.qty || 0)
+      })).filter(s => s.code);
+    }
+    if (typeof body.sizeChartUrl !== 'undefined') updates.sizeChartUrl = body.sizeChartUrl || undefined;
+    if (typeof body.sizeChartTitle !== 'undefined') updates.sizeChartTitle = body.sizeChartTitle || undefined;
 
     const doc = await Product.findByIdAndUpdate(id, updates, { new: true }).lean();
     if (!doc) return res.status(404).json({ ok: false, message: 'Not found' });
