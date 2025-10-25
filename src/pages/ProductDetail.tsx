@@ -500,6 +500,15 @@ const ProductDetail = () => {
         chartUrl={product?.sizeChartUrl}
       />
 
+      <SizeChartTableModal
+        open={showSizeChartTable}
+        onOpenChange={setShowSizeChartTable}
+        title={product?.sizeChart?.title || `${title} • Size Chart`}
+        rows={product?.sizeChart?.rows}
+        guidelines={product?.sizeChart?.guidelines}
+        diagramUrl={product?.sizeChart?.diagramUrl}
+      />
+
       <Footer />
     </div>
   );
