@@ -65,6 +65,8 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState<string>('');
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
+  const [showSizeChart, setShowSizeChart] = useState(false);
+  const [sizeStockError, setSizeStockError] = useState<string>('');
 
   useEffect(() => {
     (async () => {
