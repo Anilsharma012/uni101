@@ -125,6 +125,16 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
         : [],
       attributes: body.attributes || {},
       sizes: Array.isArray(body.sizes) ? body.sizes : (Array.isArray(body.attributes?.sizes) ? body.attributes.sizes : []),
+      trackInventoryBySize: typeof body.trackInventoryBySize === 'boolean' ? body.trackInventoryBySize : true,
+      sizeInventory: Array.isArray(body.sizeInventory)
+        ? body.sizeInventory.map(s => ({
+            code: String(s.code || '').trim(),
+            label: String(s.label || '').trim(),
+            qty: Number(s.qty || 0)
+          })).filter(s => s.code)
+        : [],
+      sizeChartUrl: body.sizeChartUrl || undefined,
+      sizeChartTitle: body.sizeChartTitle || undefined,
       active: typeof body.active === 'boolean' ? body.active : true,
     };
 
