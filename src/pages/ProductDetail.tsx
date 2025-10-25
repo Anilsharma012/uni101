@@ -4,13 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ShoppingCart, ArrowLeft, ChevronDown, ChevronUp } from "lucide-react";
+import { ShoppingCart, ArrowLeft, ChevronDown, ChevronUp, Ruler } from "lucide-react";
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { SizeChartModal } from "@/components/SizeChartModal";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 const resolveImage = (src?: string) => {
