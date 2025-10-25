@@ -354,7 +354,7 @@ const ProductDetail = () => {
 
  
             <div className="space-y-3">
-              {outOfStock ? (
+              {outOfStock || (product?.trackInventoryBySize && !selectedSize) ? (
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -365,7 +365,9 @@ const ProductDetail = () => {
                         </Button>
                       </span>
                     </TooltipTrigger>
-                    <TooltipContent>Out of stock</TooltipContent>
+                    <TooltipContent>
+                      {outOfStock ? "Out of stock" : "Please select a size"}
+                    </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
               ) : (
@@ -374,7 +376,7 @@ const ProductDetail = () => {
                   Add to Cart
                 </Button>
               )}
-              {!outOfStock && (
+              {!(outOfStock || (product?.trackInventoryBySize && !selectedSize)) && (
                 <Button size="lg" className="w-full" onClick={handleBuyNow}>
                   Buy Now
                 </Button>
