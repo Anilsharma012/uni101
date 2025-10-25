@@ -1853,6 +1853,109 @@ const handleProductSubmit = async (e: React.FormEvent) => {
                 />
               </div>
 
+              <div className="border-t border-border pt-4">
+                <h3 className="text-sm font-semibold mb-4">Structured Size Chart (Alternative)</h3>
+
+                <div>
+                  <Label htmlFor="sizeChartStructuredTitle">Size Chart Title</Label>
+                  <Input
+                    id="sizeChartStructuredTitle"
+                    value={productForm.sizeChart.title ?? ''}
+                    onChange={(e) => setProductForm((p) => ({ ...p, sizeChart: { ...p.sizeChart, title: e.target.value } }))}
+                    placeholder="e.g., KAJARU Printed Men... Size Chart"
+                  />
+                </div>
+
+                <div>
+                  <Label className="mt-4 block">Size Chart Rows</Label>
+                  <div className="space-y-3 mt-2">
+                    {[...Array(Math.max(1, (productForm.sizeChart.rows?.length ?? 0) + 1))].map((_, idx) => (
+                      <div key={idx} className="grid grid-cols-3 gap-2 items-end">
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Size Label</Label>
+                          <Input
+                            value={productForm.sizeChart.rows?.[idx]?.sizeLabel ?? ''}
+                            onChange={(e) => {
+                              const newRows = [...(productForm.sizeChart.rows ?? [])];
+                              if (!newRows[idx]) newRows[idx] = { sizeLabel: '', chest: '', brandSize: '' };
+                              newRows[idx].sizeLabel = e.target.value;
+                              setProductForm((p) => ({ ...p, sizeChart: { ...p.sizeChart, rows: newRows } }));
+                            }}
+                            placeholder="e.g., XS, S, M..."
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Chest</Label>
+                          <Input
+                            value={productForm.sizeChart.rows?.[idx]?.chest ?? ''}
+                            onChange={(e) => {
+                              const newRows = [...(productForm.sizeChart.rows ?? [])];
+                              if (!newRows[idx]) newRows[idx] = { sizeLabel: '', chest: '', brandSize: '' };
+                              newRows[idx].chest = e.target.value;
+                              setProductForm((p) => ({ ...p, sizeChart: { ...p.sizeChart, rows: newRows } }));
+                            }}
+                            placeholder="e.g., 30-32 in"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Brand Size</Label>
+                          <Input
+                            value={productForm.sizeChart.rows?.[idx]?.brandSize ?? ''}
+                            onChange={(e) => {
+                              const newRows = [...(productForm.sizeChart.rows ?? [])];
+                              if (!newRows[idx]) newRows[idx] = { sizeLabel: '', chest: '', brandSize: '' };
+                              newRows[idx].brandSize = e.target.value;
+                              setProductForm((p) => ({ ...p, sizeChart: { ...p.sizeChart, rows: newRows } }));
+                            }}
+                            placeholder="e.g., M, L..."
+                          />
+                        </div>
+                        {productForm.sizeChart.rows?.[idx]?.sizeLabel && (
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => {
+                              setProductForm((p) => ({
+                                ...p,
+                                sizeChart: {
+                                  ...p.sizeChart,
+                                  rows: p.sizeChart.rows?.filter((_, i) => i !== idx) ?? [],
+                                },
+                              }));
+                            }}
+                            className="col-span-3"
+                          >
+                            Remove Row
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="sizeChartGuidelines">Measurement Guidelines</Label>
+                  <Textarea
+                    id="sizeChartGuidelines"
+                    value={productForm.sizeChart.guidelines ?? ''}
+                    onChange={(e) => setProductForm((p) => ({ ...p, sizeChart: { ...p.sizeChart, guidelines: e.target.value } }))}
+                    placeholder="How to measure... (e.g., Chest: Measure across the fullest part of the chest)"
+                    rows={3}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="sizeChartDiagramUrl">Measurement Diagram URL (Optional)</Label>
+                  <Input
+                    id="sizeChartDiagramUrl"
+                    value={productForm.sizeChart.diagramUrl ?? ''}
+                    onChange={(e) => setProductForm((p) => ({ ...p, sizeChart: { ...p.sizeChart, diagramUrl: e.target.value } }))}
+                    placeholder="https://example.com/measurement-diagram.png"
+                  />
+                </div>
+              </div>
+
               <div>
                 <Label htmlFor="longDescription">Long Description (Rich Text)</Label>
                 <Textarea
