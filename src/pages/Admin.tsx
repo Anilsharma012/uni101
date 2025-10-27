@@ -30,6 +30,7 @@ import {
   Truck,
   Tags,
   MessageCircle,
+  Megaphone,
 } from 'lucide-react';
 import {
   Dialog,
@@ -42,6 +43,8 @@ import {
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import slugify from 'slugify';
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL || '';
@@ -86,6 +89,7 @@ const NAV_ITEMS = [
     { id: 'categories', label: 'Categories', icon: Tags },
     { id: 'orders', label: 'Orders', icon: Receipt },
     { id: 'users', label: 'Users', icon: Users2 },
+    { id: 'notifications', label: 'Notifications', icon: Megaphone },
     { id: 'home', label: 'Home Ticker & New Arrivals', icon: LayoutDashboard },
     { id: 'support', label: 'Support Center', icon: MessageCircle },
     { id: 'contact', label: 'Contact Settings', icon: MessageCircle },
@@ -402,6 +406,70 @@ const Admin = () => {
   const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(new Set());
   const [selectAllOnPage, setSelectAllOnPage] = useState(false);
   const [selectAllResults, setSelectAllResults] = useState(false);
+
+  // Notifications state
+  const [notifySearch, setNotifySearch] = useState('');
+  const [notifySelectedIds, setNotifySelectedIds] = useState<Set<string>>(new Set());
+  const [notifyMessage, setNotifyMessage] = useState('');
+  const [notifySending, setNotifySending] = useState(false);
+
+  const filteredNotifyUsers = useMemo(() => {
+    const q = notifySearch.trim().toLowerCase();
+    if (!q) return users;
+    return users.filter((u) =>
+      String(u.name || '').toLowerCase().includes(q) ||
+      String(u.email || '').toLowerCase().includes(q)
+    );
+  }, [users, notifySearch]);
+
+  const allNotifyIds = useMemo(() => (
+    filteredNotifyUsers
+      .map((u) => String((u as any)._id || (u as any).id || ''))
+      .filter((x) => x)
+  ), [filteredNotifyUsers]);
+
+  const allNotifySelected = useMemo(() => (
+    allNotifyIds.length > 0 && allNotifyIds.every((id) => notifySelectedIds.has(String(id)))
+  ), [allNotifyIds, notifySelectedIds]);
+
+  const toggleNotifySelectAll = (checked: boolean) => {
+    setNotifySelectedIds(new Set(checked ? allNotifyIds.map(String) : []));
+  };
+
+  const toggleNotifyUser = (id: string, checked: boolean) => {
+    setNotifySelectedIds((prev) => {
+      const next = new Set(prev);
+      if (checked) next.add(String(id));
+      else next.delete(String(id));
+      return next;
+    });
+  };
+
+  const sendNotifications = async () => {
+    const ids = Array.from(notifySelectedIds);
+    if (ids.length === 0) {
+      toast.error('Select at least one user');
+      return;
+    }
+    if (!notifyMessage.trim()) {
+      toast.error('Message is required');
+      return;
+    }
+    try {
+      setNotifySending(true);
+      await apiFetch<any>('/api/admin/notify', {
+        method: 'POST',
+        body: JSON.stringify({ userIds: ids, message: notifyMessage.trim(), subject: 'Admin Notification' }),
+      });
+      toast.success('Notification queued to send');
+      setNotifySelectedIds(new Set());
+      setNotifyMessage('');
+    } catch (e: any) {
+      toast.error(String(e?.message || 'Failed to send'));
+    } finally {
+      setNotifySending(false);
+    }
+  };
 
   const [settings, setSettings] = useState<IntegrationSettings>(createDefaultSettings);
   const [settingsLoading, setSettingsLoading] = useState(true);
@@ -2767,6 +2835,99 @@ const handleProductSubmit = async (e: React.FormEvent) => {
     </div>
   );
 
+  const renderNotifications = () => (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-bold">Send Notifications</h2>
+        <p className="text-sm text-muted-foreground">Select users and send an email message.</p>
+      </div>
+      <Card className="shadow-sm">
+        <CardContent className="p-5 space-y-4">
+          <Input
+            placeholder="Search users..."
+            value={notifySearch}
+            onChange={(e) => setNotifySearch(e.target.value)}
+          />
+
+          <div className="border border-border rounded-lg bg-muted/30">
+            <ScrollArea className="h-80">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-10">
+                      <div className="flex items-center gap-2">
+                        <Checkbox
+                          checked={allNotifySelected}
+                          onCheckedChange={(v) => toggleNotifySelectAll(Boolean(v))}
+                          aria-label="Select All"
+                        />
+                      </div>
+                    </TableHead>
+                    <TableHead>User Name</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Joined Date</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredNotifyUsers.map((u) => {
+                    const id = String((u as any)._id || (u as any).id || '');
+                    const isChecked = notifySelectedIds.has(id);
+                    const joinedAt = u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-IN') : '-';
+                    return (
+                      <TableRow key={id} className="hover:bg-muted/50">
+                        <TableCell className="w-10">
+                          <Checkbox
+                            checked={isChecked}
+                            onCheckedChange={(v) => toggleNotifyUser(id, Boolean(v))}
+                            aria-label={`Select ${u.name}`}
+                          />
+                        </TableCell>
+                        <TableCell className="font-medium">{u.name || '-'}</TableCell>
+                        <TableCell className="text-muted-foreground">{u.email || '-'}</TableCell>
+                        <TableCell>{joinedAt}</TableCell>
+                      </TableRow>
+                    );
+                  })}
+                  {filteredNotifyUsers.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={4} className="text-center text-sm text-muted-foreground py-6">
+                        No users found.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </ScrollArea>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="notify-message">Message to send</Label>
+            <Textarea
+              id="notify-message"
+              placeholder="Write your message..."
+              value={notifyMessage}
+              onChange={(e) => setNotifyMessage(e.target.value)}
+              className="min-h-[120px]"
+            />
+          </div>
+
+          <div className="flex items-center justify-between gap-3">
+            <div className="text-sm text-muted-foreground">
+              {notifySelectedIds.size} selected
+            </div>
+            <Button
+              onClick={sendNotifications}
+              disabled={notifySending || notifySelectedIds.size === 0 || !notifyMessage.trim()}
+              className="rounded-full transition-all hover:shadow-md"
+            >
+              {notifySending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Send Email
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
   const renderContent = () => {
     switch (activeSection) {
       case 'overview':
@@ -2779,6 +2940,8 @@ const handleProductSubmit = async (e: React.FormEvent) => {
         return renderOrders();
       case 'users':
         return renderUsers();
+      case 'notifications':
+        return renderNotifications();
       case 'support':
         return null;
       case 'contact':
