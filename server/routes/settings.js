@@ -39,7 +39,7 @@ function publicAssetUrl(req, value) {
   return raw;
 }
 
-// Public home settings (ticker)
+// Public home settings (ticker, feature rows, etc)
 router.get('/home', async (req, res) => {
   try {
     const doc = await ensureSettingsDoc();
@@ -52,8 +52,14 @@ router.get('/home', async (req, res) => {
       endAt: it.endAt || null,
       priority: Number(it.priority || 0),
     })) : [];
+    const featureRows = Array.isArray(home.featureRows) ? home.featureRows.map((fr) => ({
+      key: String(fr.key || ''),
+      title: String(fr.title || ''),
+      link: String(fr.link || ''),
+      imageAlt: String(fr.imageAlt || ''),
+    })) : [];
     const newArrivalsLimit = Number((home.newArrivalsLimit ?? 0)) || undefined;
-    return res.json({ ok: true, data: { ticker: items, newArrivalsLimit, updatedAt: doc.updatedAt } });
+    return res.json({ ok: true, data: { ticker: items, featureRows, newArrivalsLimit, updatedAt: doc.updatedAt } });
   } catch (error) {
     console.error('Failed to load home settings', error);
     return res.status(500).json({ ok: false, message: 'Server error' });
