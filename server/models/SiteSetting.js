@@ -34,10 +34,21 @@ const TickerItemSchema = new mongoose.Schema(
   { _id: false },
 );
 
+const FeatureRowSchema = new mongoose.Schema(
+  {
+    key: { type: String, required: true },
+    title: { type: String, required: true },
+    link: { type: String, required: true },
+    imageAlt: { type: String, default: '' },
+  },
+  { _id: false },
+);
+
 const HomeSettingsSchema = new mongoose.Schema(
   {
     ticker: { type: [TickerItemSchema], default: [] },
     newArrivalsLimit: { type: Number, default: 20 },
+    featureRows: { type: [FeatureRowSchema], default: [] },
   },
   { _id: false },
 );
