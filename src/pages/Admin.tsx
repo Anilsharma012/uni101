@@ -633,16 +633,20 @@ const Admin = () => {
         const data: any = res.json.data;
         const ticker = Array.isArray(data.ticker) ? data.ticker : [];
         const limit = Number(data.newArrivalsLimit || 0) || 20;
+        const featureRows = Array.isArray(data.featureRows) ? data.featureRows : [];
         setHomeTicker(ticker.map((x:any)=>({ id: String(x.id || ''), text: String(x.text || ''), url: x.url || '', startAt: x.startAt || '', endAt: x.endAt || '', priority: Number(x.priority || 0) })));
         setHomeLimit(limit);
+        setHomeFeatureRows(featureRows.map((fr:any)=>({ key: String(fr.key || ''), title: String(fr.title || ''), link: String(fr.link || ''), imageAlt: String(fr.imageAlt || '') })));
       } else {
         setHomeTicker([]);
         setHomeLimit(20);
+        setHomeFeatureRows([]);
       }
     } catch (e:any) {
       console.warn('Failed to load home settings', e?.message || e);
       setHomeTicker([]);
       setHomeLimit(20);
+      setHomeFeatureRows([]);
     } finally {
       setHomeLoading(false);
     }
