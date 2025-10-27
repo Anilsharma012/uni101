@@ -96,6 +96,37 @@ const ProductDetail = () => {
     })();
   }, [id]);
 
+  useEffect(() => {
+    const checkVerifiedBuyer = async () => {
+      if (!user || !product?._id && !product?.id) {
+        setIsVerifiedBuyer(false);
+        return;
+      }
+
+      try {
+        const { ok, json } = await api('/api/orders/mine');
+        if (!ok || !Array.isArray(json?.data)) {
+          setIsVerifiedBuyer(false);
+          return;
+        }
+
+        const productId = product._id || product.id;
+        const hasPurchased = json.data.some(order =>
+          Array.isArray(order.items) &&
+          order.items.some((item: any) =>
+            String(item.productId || item.id) === String(productId)
+          )
+        );
+
+        setIsVerifiedBuyer(hasPurchased);
+      } catch (e) {
+        setIsVerifiedBuyer(false);
+      }
+    };
+
+    checkVerifiedBuyer();
+  }, [user, product?._id, product?.id]);
+
   const img = useMemo(() => resolveImage(product?.image_url || (product?.images?.[0] || '')), [product]);
   const title = product?.title || product?.name || '';
 
