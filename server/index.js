@@ -135,6 +135,37 @@ async function start() {
       console.error('Failed to seed users', e);
     }
 
+    // Ensure default feature rows exist in home settings
+    try {
+      const SiteSetting = require('./models/SiteSetting');
+      (async () => {
+        let settings = await SiteSetting.findOne();
+        if (!settings) {
+          settings = await SiteSetting.create({
+            home: {
+              featureRows: [
+                { key: 'tshirts', title: 'T-SHIRTS', link: '/collection/t-shirts', imageAlt: 'T-Shirts Collection' },
+                { key: 'denims', title: 'DENIMS', link: '/collection/denims', imageAlt: 'Denims Collection' },
+                { key: 'hoodies', title: 'HOODIES', link: '/collection/hoodies', imageAlt: 'Hoodies Collection' },
+              ],
+            },
+          });
+          console.log('Default feature rows created in home settings');
+        } else if (!settings.home || !settings.home.featureRows || settings.home.featureRows.length === 0) {
+          settings.home = settings.home || {};
+          settings.home.featureRows = [
+            { key: 'tshirts', title: 'T-SHIRTS', link: '/collection/t-shirts', imageAlt: 'T-Shirts Collection' },
+            { key: 'denims', title: 'DENIMS', link: '/collection/denims', imageAlt: 'Denims Collection' },
+            { key: 'hoodies', title: 'HOODIES', link: '/collection/hoodies', imageAlt: 'Hoodies Collection' },
+          ];
+          await settings.save();
+          console.log('Default feature rows added to existing home settings');
+        }
+      })().catch((e) => console.error('Failed to seed feature rows', e));
+    } catch (e) {
+      console.error('Failed to seed feature rows', e);
+    }
+
     app.listen(PORT, () => {
       console.log(`Server listening on port ${PORT}`);
       console.log('Static uploads available at /uploads and /api/uploads');
