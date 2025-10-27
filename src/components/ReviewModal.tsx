@@ -114,7 +114,7 @@ export const ReviewModal = ({ open, onOpenChange, productId, orderId, onSuccess 
         throw new Error(json?.message || 'Failed to submit review');
       }
 
-      toast({ title: 'Review submitted successfully!' });
+      toast({ title: 'Review submitted!' });
       onOpenChange(false);
       form.reset();
       setImages([]);
