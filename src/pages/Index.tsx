@@ -79,6 +79,18 @@ const Index = () => {
   const [nextHeroIndex, setNextHeroIndex] = useState(1);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
+  // Feature Rows state
+  const [featureRows, setFeatureRows] = useState<FeatureRowData[]>([]);
+  const [featureRowsUpdatedAt, setFeatureRowsUpdatedAt] = useState<string>('');
+  const [featureRowsLoading, setFeatureRowsLoading] = useState(true);
+
+  // Default feature rows fallback
+  const defaultFeatureRows: FeatureRowData[] = [
+    { key: 'tshirts', title: 'T-SHIRTS', link: '/collection/t-shirts', imageAlt: 'T-Shirts Collection' },
+    { key: 'denims', title: 'DENIMS', link: '/collection/denims', imageAlt: 'Denims Collection' },
+    { key: 'hoodies', title: 'HOODIES', link: '/collection/hoodies', imageAlt: 'Hoodies Collection' },
+  ];
+
   // Featured Products state
   const [featuredProducts, setFeaturedProducts] = useState<ProductRow[]>([]);
   const [featuredLoading, setFeaturedLoading] = useState(true);
