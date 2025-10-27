@@ -115,6 +115,31 @@ const Index = () => {
     return () => clearInterval(interval);
   }, [heroImages.length]);
 
+  // Fetch Feature Rows from settings
+  useEffect(() => {
+    let ignore = false;
+    (async () => {
+      try {
+        setFeatureRowsLoading(true);
+        const { ok, json } = await api(`/api/settings/home?v=${Date.now()}`);
+        if (!ok) throw new Error(json?.message || json?.error || 'Failed to load settings');
+        const rows = Array.isArray(json?.data?.featureRows) ? json.data.featureRows : [];
+        const updatedAt = json?.data?.updatedAt || '';
+        if (!ignore) {
+          setFeatureRows(rows.length > 0 ? rows : defaultFeatureRows);
+          setFeatureRowsUpdatedAt(updatedAt);
+        }
+      } catch (e: any) {
+        if (!ignore) {
+          setFeatureRows(defaultFeatureRows);
+        }
+      } finally {
+        if (!ignore) setFeatureRowsLoading(false);
+      }
+    })();
+    return () => { ignore = true; };
+  }, []);
+
   // Categories + mixed products state
   const [cats, setCats] = useState<CategoryRow[]>([]);
   const [catsLoading, setCatsLoading] = useState(true);
