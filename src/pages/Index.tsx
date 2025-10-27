@@ -1,7 +1,7 @@
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { ProductCard } from "@/components/ProductCard";
-import { CategoryShowcase } from "@/components/CategoryShowcase";
+import { FeatureRow } from "@/components/FeatureRow";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { Button } from "@/components/ui/button";
@@ -40,6 +40,13 @@ type CategoryRow = {
   slug?: string;
 };
 
+type FeatureRowData = {
+  key: string;
+  title: string;
+  link: string;
+  imageAlt?: string;
+};
+
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 const resolveImage = (src?: string) => {
   const s = String(src || '');
@@ -72,6 +79,18 @@ const Index = () => {
   const [nextHeroIndex, setNextHeroIndex] = useState(1);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
+  // Feature Rows state
+  const [featureRows, setFeatureRows] = useState<FeatureRowData[]>([]);
+  const [featureRowsUpdatedAt, setFeatureRowsUpdatedAt] = useState<string>('');
+  const [featureRowsLoading, setFeatureRowsLoading] = useState(true);
+
+  // Default feature rows fallback
+  const defaultFeatureRows: FeatureRowData[] = [
+    { key: 'tshirts', title: 'T-SHIRTS', link: '/collection/t-shirts', imageAlt: 'T-Shirts Collection' },
+    { key: 'denims', title: 'DENIMS', link: '/collection/denims', imageAlt: 'Denims Collection' },
+    { key: 'hoodies', title: 'HOODIES', link: '/collection/hoodies', imageAlt: 'Hoodies Collection' },
+  ];
+
   // Featured Products state
   const [featuredProducts, setFeaturedProducts] = useState<ProductRow[]>([]);
   const [featuredLoading, setFeaturedLoading] = useState(true);
@@ -95,6 +114,31 @@ const Index = () => {
 
     return () => clearInterval(interval);
   }, [heroImages.length]);
+
+  // Fetch Feature Rows from settings
+  useEffect(() => {
+    let ignore = false;
+    (async () => {
+      try {
+        setFeatureRowsLoading(true);
+        const { ok, json } = await api(`/api/settings/home?v=${Date.now()}`);
+        if (!ok) throw new Error(json?.message || json?.error || 'Failed to load settings');
+        const rows = Array.isArray(json?.data?.featureRows) ? json.data.featureRows : [];
+        const updatedAt = json?.data?.updatedAt || '';
+        if (!ignore) {
+          setFeatureRows(rows.length > 0 ? rows : defaultFeatureRows);
+          setFeatureRowsUpdatedAt(updatedAt);
+        }
+      } catch (e: any) {
+        if (!ignore) {
+          setFeatureRows(defaultFeatureRows);
+        }
+      } finally {
+        if (!ignore) setFeatureRowsLoading(false);
+      }
+    })();
+    return () => { ignore = true; };
+  }, []);
 
   // Categories + mixed products state
   const [cats, setCats] = useState<CategoryRow[]>([]);
@@ -389,27 +433,34 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Category Showcase */}
+      {/* Feature Rows Section */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-cover bg-center opacity-10"
           style={{ backgroundImage: `url(${heroImg})` }}>
         </div>
-        <CategoryShowcase
-          image={tshirtImg}
-          title="T-SHIRTS"
-          link="/collection/t-shirts"
-        />
-        <CategoryShowcase
-          image={pantsImg}
-          title="DENIMS"
-          link="/collection/denims"
-          reverse
-        />
-        <CategoryShowcase
-          image={hoodieImg}
-          title="HOODIES"
-          link="/collection/hoodies"
-        />
+        {!featureRowsLoading && featureRows.length > 0 && (
+          <>
+            <FeatureRow
+              image={tshirtImg}
+              title={featureRows[0]?.title || 'T-SHIRTS'}
+              link={featureRows[0]?.link}
+              imageAlt={featureRows[0]?.imageAlt}
+            />
+            <FeatureRow
+              image={pantsImg}
+              title={featureRows[1]?.title || 'DENIMS'}
+              link={featureRows[1]?.link}
+              imageAlt={featureRows[1]?.imageAlt}
+              reverse
+            />
+            <FeatureRow
+              image={hoodieImg}
+              title={featureRows[2]?.title || 'HOODIES'}
+              link={featureRows[2]?.link}
+              imageAlt={featureRows[2]?.imageAlt}
+            />
+          </>
+        )}
       </section>
 
       {/* Featured Products */}

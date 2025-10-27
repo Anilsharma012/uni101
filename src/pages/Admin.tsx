@@ -419,6 +419,7 @@ const Admin = () => {
   // Home settings state
   const [homeTicker, setHomeTicker] = useState<Array<{ id: string; text: string; url?: string; startAt?: string; endAt?: string; priority?: number }>>([]);
   const [homeLimit, setHomeLimit] = useState<number>(20);
+  const [homeFeatureRows, setHomeFeatureRows] = useState<Array<{ key: string; title: string; link: string; imageAlt?: string }>>([]);
   const [homeLoading, setHomeLoading] = useState<boolean>(false);
   const [homeSaving, setHomeSaving] = useState<boolean>(false);
 
@@ -632,16 +633,20 @@ const Admin = () => {
         const data: any = res.json.data;
         const ticker = Array.isArray(data.ticker) ? data.ticker : [];
         const limit = Number(data.newArrivalsLimit || 0) || 20;
+        const featureRows = Array.isArray(data.featureRows) ? data.featureRows : [];
         setHomeTicker(ticker.map((x:any)=>({ id: String(x.id || ''), text: String(x.text || ''), url: x.url || '', startAt: x.startAt || '', endAt: x.endAt || '', priority: Number(x.priority || 0) })));
         setHomeLimit(limit);
+        setHomeFeatureRows(featureRows.map((fr:any)=>({ key: String(fr.key || ''), title: String(fr.title || ''), link: String(fr.link || ''), imageAlt: String(fr.imageAlt || '') })));
       } else {
         setHomeTicker([]);
         setHomeLimit(20);
+        setHomeFeatureRows([]);
       }
     } catch (e:any) {
       console.warn('Failed to load home settings', e?.message || e);
       setHomeTicker([]);
       setHomeLimit(20);
+      setHomeFeatureRows([]);
     } finally {
       setHomeLoading(false);
     }
@@ -650,8 +655,14 @@ const Admin = () => {
   const saveHomeSettings = async () => {
     try {
       setHomeSaving(true);
-      const payload = { ticker: homeTicker.map((x)=>({ ...x, text: String(x.text || '').trim() })).filter((x)=>x.text.length>0), newArrivalsLimit: homeLimit };
-      await apiFetch<any>(`/api/admin/settings/home?v=${Date.now()}`, { method: 'PATCH', body: JSON.stringify(payload) });
+      const payload = {
+        home: {
+          ticker: homeTicker.map((x)=>({ ...x, text: String(x.text || '').trim() })).filter((x)=>x.text.length>0),
+          newArrivalsLimit: homeLimit,
+          featureRows: homeFeatureRows.filter((fr)=>fr.key && fr.title && fr.link),
+        }
+      };
+      await apiFetch<any>(`/api/settings/home`, { method: 'PATCH', body: JSON.stringify(payload) });
       toast.success('Home settings updated');
       await fetchHomeSettings();
     } catch (e:any) {
@@ -2703,6 +2714,42 @@ const handleProductSubmit = async (e: React.FormEvent) => {
                     <Input value={it.text} onChange={(e)=>setHomeTicker((arr)=>{ const copy=[...arr]; copy[idx]={...copy[idx], text: e.target.value}; return copy; })} />
                   </div>
                   <Button variant="destructive" size="sm" onClick={()=>setHomeTicker((arr)=>arr.filter((_,i)=>i!==idx))}>Delete</Button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="border-t border-border pt-6 space-y-3">
+            <div className="flex items-center justify-between">
+              <Label className="text-base font-semibold">Feature Rows (T-SHIRTS, DENIMS, HOODIES)</Label>
+              <Button size="sm" variant="outline" onClick={()=>setHomeFeatureRows((arr)=>[...arr, { key: '', title: '', link: '', imageAlt: '' }])}>Add Row</Button>
+            </div>
+            <p className="text-sm text-muted-foreground">Manage the large category sections on the home page.</p>
+            <div className="space-y-3">
+              {homeFeatureRows.length === 0 && <p className="text-sm text-muted-foreground">No feature rows yet.</p>}
+              {homeFeatureRows.map((row, idx) => (
+                <div key={idx} className="border rounded-md p-4 space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-xs">Key (e.g., tshirts)</Label>
+                      <Input value={row.key} onChange={(e)=>setHomeFeatureRows((arr)=>{ const copy=[...arr]; copy[idx]={...copy[idx], key: e.target.value}; return copy; })} placeholder="tshirts" />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Title (e.g., T-SHIRTS)</Label>
+                      <Input value={row.title} onChange={(e)=>setHomeFeatureRows((arr)=>{ const copy=[...arr]; copy[idx]={...copy[idx], title: e.target.value}; return copy; })} placeholder="T-SHIRTS" />
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-xs">Link (e.g., /collection/t-shirts)</Label>
+                    <Input value={row.link} onChange={(e)=>setHomeFeatureRows((arr)=>{ const copy=[...arr]; copy[idx]={...copy[idx], link: e.target.value}; return copy; })} placeholder="/collection/t-shirts" />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Image Alt Text (optional)</Label>
+                    <Input value={row.imageAlt || ''} onChange={(e)=>setHomeFeatureRows((arr)=>{ const copy=[...arr]; copy[idx]={...copy[idx], imageAlt: e.target.value}; return copy; })} placeholder="T-Shirts Collection" />
+                  </div>
+                  <div className="flex justify-end">
+                    <Button variant="destructive" size="sm" onClick={()=>setHomeFeatureRows((arr)=>arr.filter((_,i)=>i!==idx))}>Delete Row</Button>
+                  </div>
                 </div>
               ))}
             </div>
