@@ -77,6 +77,9 @@ const ProductDetail = () => {
   const [showSizeChart, setShowSizeChart] = useState(false);
   const [showSizeChartTable, setShowSizeChartTable] = useState(false);
   const [sizeStockError, setSizeStockError] = useState<string>('');
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [isVerifiedBuyer, setIsVerifiedBuyer] = useState(false);
+  const [reviewKey, setReviewKey] = useState(0);
 
   useEffect(() => {
     (async () => {
