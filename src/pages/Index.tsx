@@ -40,6 +40,13 @@ type CategoryRow = {
   slug?: string;
 };
 
+type FeatureRowData = {
+  key: string;
+  title: string;
+  link: string;
+  imageAlt?: string;
+};
+
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 const resolveImage = (src?: string) => {
   const s = String(src || '');
