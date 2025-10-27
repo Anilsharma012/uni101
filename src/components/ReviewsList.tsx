@@ -5,6 +5,8 @@ import { useToast } from '@/hooks/use-toast';
 import { api } from '@/lib/api';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
+import { useToast } from '@/hooks/use-toast';
+
 interface Review {
   _id: string;
   text: string;
