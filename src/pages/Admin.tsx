@@ -2719,6 +2719,42 @@ const handleProductSubmit = async (e: React.FormEvent) => {
             </div>
           </div>
 
+          <div className="border-t border-border pt-6 space-y-3">
+            <div className="flex items-center justify-between">
+              <Label className="text-base font-semibold">Feature Rows (T-SHIRTS, DENIMS, HOODIES)</Label>
+              <Button size="sm" variant="outline" onClick={()=>setHomeFeatureRows((arr)=>[...arr, { key: '', title: '', link: '', imageAlt: '' }])}>Add Row</Button>
+            </div>
+            <p className="text-sm text-muted-foreground">Manage the large category sections on the home page.</p>
+            <div className="space-y-3">
+              {homeFeatureRows.length === 0 && <p className="text-sm text-muted-foreground">No feature rows yet.</p>}
+              {homeFeatureRows.map((row, idx) => (
+                <div key={idx} className="border rounded-md p-4 space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-xs">Key (e.g., tshirts)</Label>
+                      <Input value={row.key} onChange={(e)=>setHomeFeatureRows((arr)=>{ const copy=[...arr]; copy[idx]={...copy[idx], key: e.target.value}; return copy; })} placeholder="tshirts" />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Title (e.g., T-SHIRTS)</Label>
+                      <Input value={row.title} onChange={(e)=>setHomeFeatureRows((arr)=>{ const copy=[...arr]; copy[idx]={...copy[idx], title: e.target.value}; return copy; })} placeholder="T-SHIRTS" />
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-xs">Link (e.g., /collection/t-shirts)</Label>
+                    <Input value={row.link} onChange={(e)=>setHomeFeatureRows((arr)=>{ const copy=[...arr]; copy[idx]={...copy[idx], link: e.target.value}; return copy; })} placeholder="/collection/t-shirts" />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Image Alt Text (optional)</Label>
+                    <Input value={row.imageAlt || ''} onChange={(e)=>setHomeFeatureRows((arr)=>{ const copy=[...arr]; copy[idx]={...copy[idx], imageAlt: e.target.value}; return copy; })} placeholder="T-Shirts Collection" />
+                  </div>
+                  <div className="flex justify-end">
+                    <Button variant="destructive" size="sm" onClick={()=>setHomeFeatureRows((arr)=>arr.filter((_,i)=>i!==idx))}>Delete Row</Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
           <div className="flex gap-2">
             <Button onClick={saveHomeSettings} disabled={homeSaving || homeLoading}>
               {homeSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Save Home Settings
