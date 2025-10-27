@@ -13,6 +13,8 @@ import { api } from "@/lib/api";
 import { cn, escapeHtml } from "@/lib/utils";
 import { SizeChartModal } from "@/components/SizeChartModal";
 import { SizeChartTableModal } from "@/components/SizeChartTableModal";
+import { ReviewModal } from "@/components/ReviewModal";
+import ReviewsList from "@/components/ReviewsList";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 const resolveImage = (src?: string) => {
@@ -75,6 +77,9 @@ const ProductDetail = () => {
   const [showSizeChart, setShowSizeChart] = useState(false);
   const [showSizeChartTable, setShowSizeChartTable] = useState(false);
   const [sizeStockError, setSizeStockError] = useState<string>('');
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [isVerifiedBuyer, setIsVerifiedBuyer] = useState(false);
+  const [reviewKey, setReviewKey] = useState(0);
 
   useEffect(() => {
     (async () => {
@@ -90,6 +95,37 @@ const ProductDetail = () => {
       }
     })();
   }, [id]);
+
+  useEffect(() => {
+    const checkVerifiedBuyer = async () => {
+      if (!user || !product?._id && !product?.id) {
+        setIsVerifiedBuyer(false);
+        return;
+      }
+
+      try {
+        const { ok, json } = await api('/api/orders/mine');
+        if (!ok || !Array.isArray(json?.data)) {
+          setIsVerifiedBuyer(false);
+          return;
+        }
+
+        const productId = product._id || product.id;
+        const hasPurchased = json.data.some(order =>
+          Array.isArray(order.items) &&
+          order.items.some((item: any) =>
+            String(item.productId || item.id) === String(productId)
+          )
+        );
+
+        setIsVerifiedBuyer(hasPurchased);
+      } catch (e) {
+        setIsVerifiedBuyer(false);
+      }
+    };
+
+    checkVerifiedBuyer();
+  }, [user, product?._id, product?.id]);
 
   const img = useMemo(() => resolveImage(product?.image_url || (product?.images?.[0] || '')), [product]);
   const title = product?.title || product?.name || '';
@@ -414,6 +450,32 @@ const ProductDetail = () => {
                   Buy Now
                 </Button>
               )}
+              {user ? (
+                <Button
+                  size="lg"
+                  variant={isVerifiedBuyer ? 'secondary' : 'outline'}
+                  className="w-full"
+                  onClick={() => setShowReviewModal(true)}
+                  disabled={!isVerifiedBuyer}
+                >
+                  {isVerifiedBuyer ? 'Write a Review' : 'Available after purchase'}
+                </Button>
+              ) : (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="w-full">
+                        <Button size="lg" variant="outline" className="w-full" disabled>
+                          Write a Review
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Sign in to write a review
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
             </div>
 
             {/* Product Details Section */}
@@ -491,7 +553,18 @@ const ProductDetail = () => {
 
           </div>
         </div>
+
+        <ReviewsList key={reviewKey} productId={product?._id || product?.id || ''} />
       </main>
+
+      <ReviewModal
+        open={showReviewModal}
+        onOpenChange={setShowReviewModal}
+        productId={product?._id || product?.id || ''}
+        onSuccess={() => {
+          setReviewKey(prev => prev + 1);
+        }}
+      />
 
       <SizeChartModal
         open={showSizeChart}

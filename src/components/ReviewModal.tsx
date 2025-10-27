@@ -105,20 +105,24 @@ export const ReviewModal = ({ open, onOpenChange, productId, orderId, onSuccess 
       const { ok, json } = await api('/api/reviews', {
         method: 'POST',
         body: JSON.stringify(body),
-        headers: {
-          'Content-Type': 'application/json',
-        },
       });
 
       if (!ok) {
         throw new Error(json?.message || 'Failed to submit review');
       }
 
-      toast({ title: 'Review submitted successfully!' });
+      toast({ title: 'Review submitted!' });
       onOpenChange(false);
       form.reset();
       setImages([]);
       onSuccess?.();
+
+      setTimeout(() => {
+        const reviewsSection = document.getElementById('reviews');
+        if (reviewsSection) {
+          reviewsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 500);
     } catch (err: any) {
       toast({ title: err?.message || 'Failed to submit review', variant: 'destructive' });
     } finally {

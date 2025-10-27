@@ -79,7 +79,7 @@ router.post('/', requireAuth, async (req, res) => {
       userId: req.user._id,
       text: sanitized,
       images: images.filter(img => typeof img === 'string' && img.trim().length > 0),
-      status: 'pending',
+      status: 'published',
     };
 
     if (orderId) {

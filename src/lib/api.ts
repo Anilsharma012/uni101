@@ -40,17 +40,18 @@ export async function api(path: string, options: RequestInit = {}) {
     const relHeaders = { "Content-Type": "application/json", ...(options.headers || {}) } as Record<string,string>;
     if (token) relHeaders['Authorization'] = `Bearer ${token}`;
 
+    const { headers: _, ...optionsWithoutHeaders } = options;
     const relRes = await fetch(relUrl, {
         credentials: "include",
         headers: relHeaders,
-        ...options,
+        ...optionsWithoutHeaders,
       });
       const relJson = await relRes.json().catch(() => ({}));
       if (relRes.ok) return { ok: true, status: relRes.status, json: relJson };
       return { ok: relRes.ok, status: relRes.status, json: relJson };
     } catch (relErr) {
       const finalMsg = `Failed to reach backend via both API_BASE (${API_BASE}) and relative '/api'. Deploy backend publicly or update VITE_API_BASE_URL.`;
-      console.warn("Relative /api fetch failed — backend unreachable from this preview environment.");
+      console.warn("Relative /api fetch failed ��� backend unreachable from this preview environment.");
       return { ok: false, status: 0, error: finalMsg };
     }
   }
@@ -60,10 +61,11 @@ export async function api(path: string, options: RequestInit = {}) {
     const headers = { "Content-Type": "application/json", ...(options.headers || {}) } as Record<string,string>;
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
+    const { headers: _, ...optionsWithoutHeaders } = options;
     const res = await fetch(url, {
       credentials: "include",
       headers,
-      ...options,
+      ...optionsWithoutHeaders,
     });
 
     const json = await res.json().catch(() => ({}));
