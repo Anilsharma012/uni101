@@ -40,10 +40,11 @@ export async function api(path: string, options: RequestInit = {}) {
     const relHeaders = { "Content-Type": "application/json", ...(options.headers || {}) } as Record<string,string>;
     if (token) relHeaders['Authorization'] = `Bearer ${token}`;
 
+    const { headers: _, ...optionsWithoutHeaders } = options;
     const relRes = await fetch(relUrl, {
         credentials: "include",
         headers: relHeaders,
-        ...options,
+        ...optionsWithoutHeaders,
       });
       const relJson = await relRes.json().catch(() => ({}));
       if (relRes.ok) return { ok: true, status: relRes.status, json: relJson };
