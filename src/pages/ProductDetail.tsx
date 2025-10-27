@@ -450,6 +450,32 @@ const ProductDetail = () => {
                   Buy Now
                 </Button>
               )}
+              {user ? (
+                <Button
+                  size="lg"
+                  variant={isVerifiedBuyer ? 'secondary' : 'outline'}
+                  className="w-full"
+                  onClick={() => setShowReviewModal(true)}
+                  disabled={!isVerifiedBuyer}
+                >
+                  {isVerifiedBuyer ? 'Write a Review' : 'Available after purchase'}
+                </Button>
+              ) : (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="w-full">
+                        <Button size="lg" variant="outline" className="w-full" disabled>
+                          Write a Review
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Sign in to write a review
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
             </div>
 
             {/* Product Details Section */}
