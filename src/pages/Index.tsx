@@ -433,27 +433,34 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Category Showcase */}
+      {/* Feature Rows Section */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-cover bg-center opacity-10"
           style={{ backgroundImage: `url(${heroImg})` }}>
         </div>
-        <CategoryShowcase
-          image={tshirtImg}
-          title="T-SHIRTS"
-          link="/collection/t-shirts"
-        />
-        <CategoryShowcase
-          image={pantsImg}
-          title="DENIMS"
-          link="/collection/denims"
-          reverse
-        />
-        <CategoryShowcase
-          image={hoodieImg}
-          title="HOODIES"
-          link="/collection/hoodies"
-        />
+        {!featureRowsLoading && featureRows.length > 0 && (
+          <>
+            <FeatureRow
+              image={tshirtImg}
+              title={featureRows[0]?.title || 'T-SHIRTS'}
+              link={featureRows[0]?.link}
+              imageAlt={featureRows[0]?.imageAlt}
+            />
+            <FeatureRow
+              image={pantsImg}
+              title={featureRows[1]?.title || 'DENIMS'}
+              link={featureRows[1]?.link}
+              imageAlt={featureRows[1]?.imageAlt}
+              reverse
+            />
+            <FeatureRow
+              image={hoodieImg}
+              title={featureRows[2]?.title || 'HOODIES'}
+              link={featureRows[2]?.link}
+              imageAlt={featureRows[2]?.imageAlt}
+            />
+          </>
+        )}
       </section>
 
       {/* Featured Products */}
