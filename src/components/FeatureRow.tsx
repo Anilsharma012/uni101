@@ -52,7 +52,7 @@ export const FeatureRow = ({ image, title, link, imageAlt, reverse = false }: Fe
           {title}
         </h2>
         {isClickable && (
-          <Link to={link} className="w-full md:w-auto flex justify-center md:justify-end">
+          <div className="w-full md:w-auto flex justify-center md:justify-end pointer-events-none">
             <Button
               size="lg"
               variant="outline"
@@ -60,7 +60,7 @@ export const FeatureRow = ({ image, title, link, imageAlt, reverse = false }: Fe
             >
               VIEW
             </Button>
-          </Link>
+          </div>
         )}
       </div>
     </div>
