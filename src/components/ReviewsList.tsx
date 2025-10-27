@@ -1,197 +1,171 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
 import { api } from '@/lib/api';
-import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface Review {
   _id: string;
   text: string;
   images: string[];
-  userId: { _id: string; name: string };
+  userId: { name: string };
   createdAt: string;
-  status: string;
 }
 
 interface ReviewsListProps {
   productId: string;
-  refreshTrigger?: number;
 }
 
-export const ReviewsList = ({ productId, refreshTrigger = 0 }: ReviewsListProps) => {
+const ReviewsList = ({ productId }: ReviewsListProps) => {
+  const { toast } = useToast();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(0);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [totalPages, setTotalPages] = useState(1);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchReviews = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const cacheKey = `?v=${Date.now()}`;
-        const { ok, json } = await api(`/api/reviews?productId=${productId}&status=published&page=${page}&limit=10${cacheKey}`);
-
-        if (!ok) {
-          throw new Error(json?.message || 'Failed to load reviews');
-        }
-
-        setReviews(json.data || []);
-        setTotalPages(json.pagination?.pages || 0);
-      } catch (err: any) {
-        setError(err?.message || 'Failed to load reviews');
-        setReviews([]);
-      } finally {
-        setLoading(false);
+  const fetchReviews = async (pageNum: number) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const cacheKey = `?productId=${productId}&status=published&page=${pageNum}&limit=10&v=${Date.now()}`;
+      const { ok, json } = await api(`/api/reviews${cacheKey}`);
+      
+      if (!ok) {
+        throw new Error(json?.message || 'Failed to load reviews');
       }
-    };
 
-    setPage(1);
-    fetchReviews();
-  }, [productId, refreshTrigger]);
-
-  useEffect(() => {
-    const fetchReviews = async () => {
-      setLoading(true);
-      try {
-        const cacheKey = `?v=${Date.now()}`;
-        const { ok, json } = await api(`/api/reviews?productId=${productId}&status=published&page=${page}&limit=10${cacheKey}`);
-
-        if (ok) {
-          setReviews(json.data || []);
-          setTotalPages(json.pagination?.pages || 0);
-        }
-      } catch {}
-      finally {
-        setLoading(false);
-      }
-    };
-
-    if (page > 1) {
-      fetchReviews();
+      setReviews(json?.data || []);
+      setTotalPages(json?.pagination?.pages || 1);
+    } catch (err: any) {
+      setError(err?.message || 'Failed to load reviews');
+    } finally {
+      setLoading(false);
     }
-  }, [page, productId]);
+  };
 
-  if (loading && page === 1) {
-    return (
-      <div className="space-y-4">
-        {Array.from({ length: 3 }).map((_, idx) => (
-          <Card key={idx} className="p-4 space-y-3">
-            <div className="h-4 bg-muted rounded w-1/3 animate-pulse" />
-            <div className="h-3 bg-muted rounded w-full animate-pulse" />
-            <div className="h-3 bg-muted rounded w-5/6 animate-pulse" />
-          </Card>
-        ))}
-      </div>
-    );
-  }
+  useEffect(() => {
+    fetchReviews(page);
+  }, [productId, page]);
 
-  if (error && page === 1) {
-    return (
-      <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-md text-sm text-destructive">
-        {error}
-      </div>
-    );
-  }
+  const formatDate = (dateString: string) => {
+    try {
+      return new Date(dateString).toLocaleDateString('en-IN', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      });
+    } catch {
+      return 'Date unknown';
+    }
+  };
 
-  if (!loading && reviews.length === 0) {
+  const renderImage = (src: string) => {
+    return src.startsWith('http') ? src : `/api${src.startsWith('/') ? src : `/${src}`}`;
+  };
+
+  if (error) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
-        No reviews yet. Be the first to review this product!
+      <div className="mt-8 pt-8 border-t border-border">
+        <h2 className="text-2xl font-bold tracking-tighter mb-4">Reviews</h2>
+        <div className="text-sm text-muted-foreground">
+          {error}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      {reviews.map((review) => (
-        <Card key={review._id} className="p-4 space-y-3">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <p className="font-semibold text-sm">{review.userId?.name || 'Anonymous'}</p>
-              <p className="text-xs text-muted-foreground">
-                {new Date(review.createdAt).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'short',
-                  day: 'numeric',
-                })}
-              </p>
+    <div className="mt-8 pt-8 border-t border-border" id="reviews">
+      <h2 className="text-2xl font-bold tracking-tighter mb-8">Reviews</h2>
+
+      {loading ? (
+        <div className="space-y-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="border border-border rounded-lg p-4 space-y-3">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-3 w-48" />
+              <Skeleton className="h-16 w-full" />
             </div>
+          ))}
+        </div>
+      ) : reviews.length === 0 ? (
+        <div className="text-center py-12">
+          <p className="text-muted-foreground mb-2">No reviews yet.</p>
+          <p className="text-sm text-muted-foreground">Be the first to share your experience!</p>
+        </div>
+      ) : (
+        <>
+          <div className="space-y-4">
+            {reviews.map((review) => (
+              <div key={review._id} className="border border-border rounded-lg p-4">
+                <div className="flex items-start justify-between mb-2">
+                  <div>
+                    <p className="font-semibold text-sm">{review.userId?.name || 'Anonymous'}</p>
+                    <p className="text-xs text-muted-foreground">{formatDate(review.createdAt)}</p>
+                  </div>
+                </div>
+
+                <p className="text-sm text-foreground mb-3 whitespace-pre-wrap">{review.text}</p>
+
+                {review.images && review.images.length > 0 && (
+                  <div className="grid grid-cols-3 gap-2 mt-3">
+                    {review.images.map((img, idx) => (
+                      <div key={idx} className="aspect-square rounded-md overflow-hidden bg-muted">
+                        <img
+                          src={renderImage(img)}
+                          alt={`Review ${idx + 1}`}
+                          className="w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                          onError={(e) => {
+                            const el = e.currentTarget as HTMLImageElement;
+                            const cur = String(el.src || '');
+                            const candidate = cur.includes('/api/uploads') 
+                              ? cur.replace('/api/uploads', '/uploads') 
+                              : (cur.includes('/uploads') ? `/api${cur}` : '/placeholder.svg');
+                            if (candidate !== cur) el.src = candidate;
+                            else el.src = '/placeholder.svg';
+                          }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
 
-          <p className="text-sm text-foreground whitespace-pre-wrap break-words">{review.text}</p>
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-6 pt-6 border-t border-border">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(Math.max(1, page - 1))}
+                disabled={page === 1}
+              >
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                Previous
+              </Button>
 
-          {review.images && review.images.length > 0 && (
-            <div className="grid grid-cols-3 gap-2 mt-3">
-              {review.images.map((img, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setSelectedImage(img)}
-                  className="aspect-square rounded-md overflow-hidden bg-muted hover:opacity-80 transition-opacity"
-                >
-                  <img
-                    src={img}
-                    alt={`Review image ${idx + 1}`}
-                    className="w-full h-full object-cover"
-                  />
-                </button>
-              ))}
+              <span className="text-sm text-muted-foreground">
+                Page {page} of {totalPages}
+              </span>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(Math.min(totalPages, page + 1))}
+                disabled={page === totalPages}
+              >
+                Next
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
             </div>
           )}
-        </Card>
-      ))}
-
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2 mt-6 pt-4 border-t">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPage(Math.max(1, page - 1))}
-            disabled={page === 1 || loading}
-          >
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            Previous
-          </Button>
-
-          <div className="text-sm text-muted-foreground">
-            Page {page} of {totalPages}
-          </div>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPage(Math.min(totalPages, page + 1))}
-            disabled={page === totalPages || loading}
-          >
-            Next
-            <ChevronRight className="h-4 w-4 ml-1" />
-          </Button>
-        </div>
-      )}
-
-      {selectedImage && (
-        <div
-          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
-          onClick={() => setSelectedImage(null)}
-        >
-          <div className="relative max-w-2xl w-full">
-            <button
-              onClick={() => setSelectedImage(null)}
-              className="absolute top-4 right-4 bg-white/10 hover:bg-white/20 rounded-full p-2 text-white"
-            >
-              <X className="h-5 w-5" />
-            </button>
-            <img
-              src={selectedImage}
-              alt="Review"
-              className="w-full h-auto rounded-lg"
-              onClick={(e) => e.stopPropagation()}
-            />
-          </div>
-        </div>
+        </>
       )}
     </div>
   );
 };
+
+export default ReviewsList;
