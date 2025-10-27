@@ -13,6 +13,8 @@ import { api } from "@/lib/api";
 import { cn, escapeHtml } from "@/lib/utils";
 import { SizeChartModal } from "@/components/SizeChartModal";
 import { SizeChartTableModal } from "@/components/SizeChartTableModal";
+import { ReviewModal } from "@/components/ReviewModal";
+import ReviewsList from "@/components/ReviewsList";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 const resolveImage = (src?: string) => {
