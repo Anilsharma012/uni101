@@ -553,7 +553,18 @@ const ProductDetail = () => {
 
           </div>
         </div>
+
+        <ReviewsList key={reviewKey} productId={product?._id || product?.id || ''} />
       </main>
+
+      <ReviewModal
+        open={showReviewModal}
+        onOpenChange={setShowReviewModal}
+        productId={product?._id || product?.id || ''}
+        onSuccess={() => {
+          setReviewKey(prev => prev + 1);
+        }}
+      />
 
       <SizeChartModal
         open={showSizeChart}
