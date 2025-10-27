@@ -655,8 +655,14 @@ const Admin = () => {
   const saveHomeSettings = async () => {
     try {
       setHomeSaving(true);
-      const payload = { ticker: homeTicker.map((x)=>({ ...x, text: String(x.text || '').trim() })).filter((x)=>x.text.length>0), newArrivalsLimit: homeLimit };
-      await apiFetch<any>(`/api/admin/settings/home?v=${Date.now()}`, { method: 'PATCH', body: JSON.stringify(payload) });
+      const payload = {
+        home: {
+          ticker: homeTicker.map((x)=>({ ...x, text: String(x.text || '').trim() })).filter((x)=>x.text.length>0),
+          newArrivalsLimit: homeLimit,
+          featureRows: homeFeatureRows.filter((fr)=>fr.key && fr.title && fr.link),
+        }
+      };
+      await apiFetch<any>(`/api/settings/home`, { method: 'PATCH', body: JSON.stringify(payload) });
       toast.success('Home settings updated');
       await fetchHomeSettings();
     } catch (e:any) {
