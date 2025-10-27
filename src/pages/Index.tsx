@@ -445,6 +445,7 @@ const Index = () => {
               title={featureRows[0]?.title || 'T-SHIRTS'}
               link={featureRows[0]?.link}
               imageAlt={featureRows[0]?.imageAlt}
+              letter="T"
             />
             <FeatureRow
               image={pantsImg}
@@ -452,12 +453,14 @@ const Index = () => {
               link={featureRows[1]?.link}
               imageAlt={featureRows[1]?.imageAlt}
               reverse
+              letter="D"
             />
             <FeatureRow
               image={hoodieImg}
               title={featureRows[2]?.title || 'HOODIES'}
               link={featureRows[2]?.link}
               imageAlt={featureRows[2]?.imageAlt}
+              letter="H"
             />
           </>
         )}
@@ -469,7 +472,6 @@ const Index = () => {
           <h2 className="text-3xl md:text-5xl font-black tracking-tighter mb-4">
             Featured <span className="text-primary">Collection</span>
           </h2>
-          <p className="text-muted-foreground">Handpicked essentials for your wardrobe</p>
         </div>
 
         {featuredLoading ? (
