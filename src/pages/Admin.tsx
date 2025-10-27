@@ -292,6 +292,10 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
         }
         return demoSettings as unknown as T;
       }
+      if (p.includes('/api/admin/notify')) {
+        // Simulate success when backend is unreachable in preview
+        return { ok: true } as unknown as T;
+      }
 
       return {} as T;
     }
