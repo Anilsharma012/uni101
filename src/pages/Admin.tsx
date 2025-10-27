@@ -194,6 +194,16 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
 
   const rawUrl = path.startsWith('http') ? path : joinUrl(API_BASE, path);
 
+  // Short-circuit notifications in preview environments where backend may be unreachable
+  try {
+    const lower = String(path || '').toLowerCase();
+    const inPreview = (typeof location !== 'undefined') && !/localhost|127\.0\.0\.1/.test(location.hostname);
+    const apiIsLocal = !API_BASE || /localhost|127\.0\.0\.1/.test(API_BASE);
+    if (lower.includes('/api/admin/notify') && inPreview && apiIsLocal) {
+      return ({ ok: true } as unknown) as T;
+    }
+  } catch {}
+
   const doFetch = async (targetUrl: string) => {
     const token = (typeof window !== 'undefined') ? localStorage.getItem('token') : null;
     const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) } as Record<string,string>;
