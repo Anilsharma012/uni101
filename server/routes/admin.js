@@ -5,6 +5,7 @@ const User = require('../models/User');
 const Invoice = require('../models/Invoice');
 const SiteSetting = require('../models/SiteSetting');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
+const nodemailer = require('nodemailer');
 
 // GET /api/admin/stats/overview?range=7d|30d|90d
 router.get('/stats/overview', requireAuth, requireAdmin, async (req, res) => {
@@ -279,6 +280,54 @@ router.patch('/settings/contact', requireAuth, requireAdmin, async (req, res) =>
   } catch (e) {
     console.error('Failed to update contact settings', e);
     return res.status(500).json({ ok: false, message: 'Server error' });
+  }
+});
+
+// POST /api/admin/notify - send admin notifications to selected users
+router.post('/notify', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { userIds, message, subject } = req.body || {};
+
+    if (!Array.isArray(userIds) || userIds.length === 0) {
+      return res.status(400).json({ ok: false, message: 'userIds is required' });
+    }
+    if (typeof message !== 'string' || message.trim().length === 0) {
+      return res.status(400).json({ ok: false, message: 'message is required' });
+    }
+
+    const ids = userIds.map(String);
+    const users = await User.find({ _id: { $in: ids } }).select('name email').lean();
+    const emails = Array.isArray(users) ? users.map((u) => u.email).filter(Boolean) : [];
+
+    const gmailUser = process.env.GMAIL_USER;
+    const gmailPass = process.env.GMAIL_PASSWORD;
+
+    if (gmailUser && gmailPass && emails.length > 0) {
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: { user: gmailUser, pass: gmailPass },
+      });
+
+      await transporter.sendMail({
+        from: gmailUser,
+        bcc: emails.join(', '),
+        subject: (typeof subject === 'string' && subject.trim()) ? subject.trim() : 'Admin Notification',
+        html: `<div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif">${String(message).replace(/\n/g, '<br>')}</div>`,
+      });
+
+      return res.json({ ok: true, data: { sent: emails.length, recipients: emails } });
+    }
+
+    console.log('Email not configured or no recipients. Simulating notification send.', {
+      ids,
+      emails,
+      subject: (typeof subject === 'string' && subject.trim()) ? subject.trim() : 'Admin Notification',
+      preview: String(message).slice(0, 200),
+    });
+    return res.json({ ok: true, data: { sent: 0, recipients: emails }, message: 'Simulated send (email not configured)' });
+  } catch (e) {
+    console.error('Notify error:', e);
+    return res.status(500).json({ ok: false, message: 'Failed to send notifications' });
   }
 });
 
