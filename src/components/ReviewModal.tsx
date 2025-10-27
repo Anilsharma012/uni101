@@ -105,9 +105,6 @@ export const ReviewModal = ({ open, onOpenChange, productId, orderId, onSuccess 
       const { ok, json } = await api('/api/reviews', {
         method: 'POST',
         body: JSON.stringify(body),
-        headers: {
-          'Content-Type': 'application/json',
-        },
       });
 
       if (!ok) {
