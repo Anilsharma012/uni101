@@ -66,6 +66,59 @@ router.get('/home', async (req, res) => {
   }
 });
 
+// Admin: edit home settings (ticker, feature rows, etc)
+router.patch('/home', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const body = req.body || {};
+    const set = {};
+
+    if (body.home && typeof body.home === 'object') {
+      const home = body.home;
+
+      if (Array.isArray(home.ticker)) {
+        const ticker = home.ticker.map((it) => ({
+          id: String(it.id || ''),
+          text: String(it.text || ''),
+          url: String(it.url || ''),
+          startAt: it.startAt ? new Date(it.startAt) : null,
+          endAt: it.endAt ? new Date(it.endAt) : null,
+          priority: Number(it.priority || 0),
+        }));
+        set['home.ticker'] = ticker;
+      }
+
+      if (Array.isArray(home.featureRows)) {
+        const featureRows = home.featureRows.map((fr) => ({
+          key: String(fr.key || ''),
+          title: String(fr.title || ''),
+          link: String(fr.link || ''),
+          imageAlt: String(fr.imageAlt || ''),
+        }));
+        set['home.featureRows'] = featureRows;
+      }
+
+      if (typeof home.newArrivalsLimit === 'number') {
+        set['home.newArrivalsLimit'] = Math.max(1, home.newArrivalsLimit);
+      }
+    }
+
+    if (Object.keys(set).length === 0) {
+      return res.status(400).json({ ok: false, message: 'No valid fields supplied' });
+    }
+
+    const doc = await SiteSetting.findOneAndUpdate({}, { $set: set }, {
+      new: true,
+      upsert: true,
+      setDefaultsOnInsert: true,
+    });
+
+    return res.json({ ok: true, data: toClient(doc) });
+  } catch (error) {
+    console.error('Failed to update home settings', error);
+    return res.status(500).json({ ok: false, message: 'Server error' });
+  }
+});
+
 // Admin-only full settings
 router.get('/', requireAuth, requireAdmin, async (req, res) => {
   try {
