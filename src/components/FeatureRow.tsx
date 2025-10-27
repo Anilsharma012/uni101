@@ -11,6 +11,7 @@ interface FeatureRowProps {
 
 export const FeatureRow = ({ image, title, link, imageAlt, reverse = false }: FeatureRowProps) => {
   const firstLetter = (title || '').charAt(0).toUpperCase();
+  const restTitle = (title || '').slice(1); // ✅ added: title ke baaki letters
   const isClickable = link && link.trim().length > 0;
   
   const content = (
@@ -49,7 +50,9 @@ export const FeatureRow = ({ image, title, link, imageAlt, reverse = false }: Fe
             wordBreak: 'break-word',
           }}
         >
-          {title}
+          {/* ✅ first letter red without deleting your structure */}
+          <span className="text-red-500">{firstLetter}</span>
+          {restTitle}
         </h2>
         {isClickable && (
           <div className="w-full md:w-auto flex justify-center md:justify-end pointer-events-none">
