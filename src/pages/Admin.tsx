@@ -419,6 +419,7 @@ const Admin = () => {
   // Home settings state
   const [homeTicker, setHomeTicker] = useState<Array<{ id: string; text: string; url?: string; startAt?: string; endAt?: string; priority?: number }>>([]);
   const [homeLimit, setHomeLimit] = useState<number>(20);
+  const [homeFeatureRows, setHomeFeatureRows] = useState<Array<{ key: string; title: string; link: string; imageAlt?: string }>>([]);
   const [homeLoading, setHomeLoading] = useState<boolean>(false);
   const [homeSaving, setHomeSaving] = useState<boolean>(false);
 
